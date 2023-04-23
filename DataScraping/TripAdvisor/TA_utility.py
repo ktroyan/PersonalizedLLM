@@ -9,7 +9,9 @@ import pandas as pd
 
 def get_driver():
     # load the chrome driver with options
-    chrome_driver_path = "C:/Users/klimm/Documents/ETHZ/Semester Project/DataScraping/chromedriver_win32/chromedriver.exe"  # path to the chromedriver	
+    chrome_driver_path = "C:/Users/klimm/Documents/ETHZ/Semester Project/customizedLLM/DataScraping/chromedriver_win32/chromedriver.exe"  # path to the chromedriver	
+    # chrome_driver_path = "C:\\Users\\klimm\\Documents\\ETHZ\\Semester Project\\customizedLLM\\DataScraping\\chromedriver_win32\\chromedriver.exe"  # path to the chromedriver	
+    
     chrome_options = Options()
     user_agent = ''.join(random.choices(string.ascii_lowercase, k=20))  # random user agent name
     chrome_options.add_argument(f'user-agent={user_agent}')
