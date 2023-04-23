@@ -1,4 +1,4 @@
-# customizedLLM
+# CustomizedLLM
 A repository part of a "Customized/Personalized LLMs" project.
 
 ### Data Collection
