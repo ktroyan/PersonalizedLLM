@@ -243,6 +243,7 @@ def rewrite_restaurants_urls_file(path_to_restaurant_file, restaurant_full_row_h
         for data in restaurants_data:
             restaurant_file_update_writer.writerow(data)
 
+# this function goes over a list of restaurants and collects the user profiles and associated reviews of each restaurant in a given language if the colelction criterion is met
 def start_scraping(driver, data_writer, path_to_restaurant_file, restaurant_full_row_header, language_to_scrape, nb_of_pages_to_scrape_per_restaurant, restaurant_url_index=0):
     
     # check if the file containing the urls of the restaurants to scrape exists, if not, create it by running the appropriate script
