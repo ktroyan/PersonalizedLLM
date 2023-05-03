@@ -50,7 +50,7 @@ def scroll_to_reviews_panel(driver, wait_driver):
     dummy_reviews_point_for_scroll)
 
 def remove_sticky_bar(driver):
-    try: 
+    try:
         # TODO: See if null check OK for l and l.parentNode
         # remove the sticky bar to avoid clicking on it
         # wait_driver.until(EC.visibility_of_element_located((By.XPATH, "//div[normalize-space()='Show reviews that mention']")))
@@ -209,11 +209,13 @@ def collect_sample(data_writer, city, restaurant_url, parsed_user_info, user_tag
     user_id_hash = base64.b64encode(hashlib.md5(bytes(user_id, 'utf-8')).digest())
     
     user_info = [user_id_hash, user_id_link, user_id] + user_info
-    print("Full user info: ", user_info)
     
-    # Write the user profile (UP) (and the review's info for the review we found the UP) in the csv file
     all_user_info = user_info + [user_tags]
+    print("User info: ", all_user_info)
+
     review_info = [restaurant_url, review_date, city, language_to_scrape, float(review_rating)/10, review_title, review]
+
+    # Write the user profile (UP) (and the review's info for the review we found the UP) in the csv file
     data_writer.writerow(all_user_info + review_info)
      
 def close_user_overlay(driver, wait_driver):
