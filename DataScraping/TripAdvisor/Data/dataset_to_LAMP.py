@@ -131,32 +131,32 @@ if __name__ == '__main__':
     # save the 6 datasets in 6 files
 
     # we index it as 80 (8 for the index of the LaMP dataset in the benchmark and 0 because it is train)
-    path_lamp_9_train_input = f'./TripAdvisor/Data/LaMP_9_3K_train_input.json'
+    path_lamp_9_train_input = f'./TripAdvisor/Data/LaMP/LaMP_9_3K_train_input.json'
     with open(path_lamp_9_train_input, 'w') as f:
         json.dump(train_input_dataset, f)
 
     # we index it as 80 (8 for the index of the LaMP dataset in the benchmark and 0 because it is train)
-    path_lamp_9_train_output = f'./TripAdvisor/Data/LaMP_9_3K_train_output.json'
+    path_lamp_9_train_output = f'./TripAdvisor/Data/LaMP/LaMP_9_3K_train_output.json'
     with open(path_lamp_9_train_output, 'w') as f:
         json.dump({'task': "LaMP_9", 'golds': train_output_dataset}, f)
 
     # we index it as 81 (8 for the index of the LaMP dataset in the benchmark and 1 because it is val)
-    path_lamp_9_val_input = f'./TripAdvisor/Data/LaMP_9_3K_val_input.json'
+    path_lamp_9_val_input = f'./TripAdvisor/Data/LaMP/LaMP_9_3K_val_input.json'
     with open(path_lamp_9_val_input, 'w') as f:
         json.dump(val_input_dataset, f)
     
     # we index it as 81 (8 for the index of the LaMP dataset in the benchmark and 1 because it is val)
-    path_lamp_9_val_output = f'./TripAdvisor/Data/LaMP_9_3K_val_output.json'
+    path_lamp_9_val_output = f'./TripAdvisor/Data/LaMP/LaMP_9_3K_val_output.json'
     with open(path_lamp_9_val_output, 'w') as f:
         json.dump({'task': "LaMP_9", 'golds': val_output_dataset}, f)
 
     # we index it as 82 (8 for the index of the LaMP dataset in the benchmark and 2 because it is test)
-    path_lamp_9_test_input = f'./TripAdvisor/Data/LaMP_9_3K_test_input.json'
+    path_lamp_9_test_input = f'./TripAdvisor/Data/LaMP/LaMP_9_3K_test_input.json'
     with open(path_lamp_9_test_input, 'w') as f:
         json.dump(test_input_dataset, f)
 
     # Note that this dataset file should not be made public
     # we index it as 82 (8 for the index of the LaMP dataset in the benchmark and 2 because it is test)
-    path_lamp_9_test_output = f'./TripAdvisor/Data/LaMP_9_3K_test_output.json'
+    path_lamp_9_test_output = f'./TripAdvisor/Data/LaMP/LaMP_9_3K_test_output.json'
     with open(path_lamp_9_test_output, 'w') as f:
         json.dump({'task': "LaMP_9", 'golds': test_output_dataset}, f)
