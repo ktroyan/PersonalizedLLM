@@ -1,5 +1,5 @@
-# CustomizedLLM
-A repository part of a "Customized/Personalized LLMs" project.
+# Personalized (Large) Language Models (PLMs)
+A repository part of a "Personalized/Customized LLMs" project.
 
 ### Data Collection
 We refer to the folder: DataScraping.
