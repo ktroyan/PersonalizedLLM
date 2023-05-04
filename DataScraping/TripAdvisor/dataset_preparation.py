@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # restaurants_urls_df = pd.read_csv(path_restaurants_urls_file, delimiter="\t", encoding="utf-8")
     # TA_utility.update_scraped_lang(final_dataset_df, 'restaurant_reviewed_url', restaurants_urls_df, 'restaurant_url', path_restaurants_urls_file, language_to_scrape)
 
-
+    
 
     
                         
