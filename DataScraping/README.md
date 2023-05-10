@@ -39,7 +39,7 @@ Moreover, on average, around 1 out of 20 samples is collected (as it meets the c
 Hence, on average with a margin for error, one sample is collected every ~100s. 
 Therefore, to obtain 10k samples, the program needs to run for ~10^6 seconds. This means that ~278h / ~12 days are needed to collect 10k samples (given the current collection criterion).
 
-Considering that we go over 20 pages of a restaurant on average (given that the hyper-parameter of nb_pages is set to 30), 
+Considering that we go over 20 pages of a restaurant on average (given that the hyper-parameter of ``nb_pages`` is set to 30), 
 and that there are 15 reviews (samples) per page, we have ~(15*20)/20 = 15 samples collected per restaurant. Therefore, ~666 restaurants are needed to obtain 10k samples, which is achieved using around 20 cities. 
 
 #### **Notes**
@@ -111,7 +111,7 @@ The final dataset contains the following features/columns:
 |   user_age_range	|   age range (e.g., 35-49) of the user	|
 |   user_sex	|   sex of the user (i.e., man or woman)	|
 |   user_location	|   user location	|
-|   user_nb_contributions	|   number of contributions made by the user	|
+|   user_nb_contributions	|   number of reviews posted by the user	|
 |   user_nb_cities_visited	|   number of cities visited by the user	|
 |   user_nb_helpful_votes	|   number of helpful (as per TripdAdvisor) votes made by the user	|
 |   user_nb_photos	|   number of photos posted by the user	|
@@ -122,7 +122,7 @@ The final dataset contains the following features/columns:
 |   review_lang	|   language of the review	|
 |   review_rating	|   rating associated to the review given by the user	|
 |   review_title	|   title of the review	|
-|   review	|   review text	|
+|   review	|   review natural language text	|
 
 
 There is no NaN value in the final dataset (e.g., `TA_final_dataset_EN_3K.csv`), as the samples with at least one NaN value have been removed. 
