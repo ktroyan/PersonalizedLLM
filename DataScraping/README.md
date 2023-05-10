@@ -26,7 +26,7 @@ The current data collection process, executed through several python scripts ([s
         * select the language of the reviews (e.g., English, French, etc.)
         * iterate over the restaurant pages for restaurants that were yet not scraped in the selected language and:
             + collect the review and user data on the page if the UP meets a certain [criterion](./TripAdvisor/tripadvisor_scraping.py#:~:text=def%20define_collection_condition)
-            * save the collected data/samples in the `TA_data_EN.csv` file
+            * save the collected data/samples in the `TA_data_EN.csv` file (EN if language is English)
         + update the `TA_restaurants_urls.csv` by marking the scraped restaurant with the language for which we scraped reviews (e.g., "en" for English)
 
 The [criterion](./TripAdvisor/tripadvisor_scraping.py#:~:text=def%20start_scraping) is important as it constitutes the basis of the samples collection. It was made relatively loose in order to give some margin to what would be the final dataset (e.g., when getting rid of samples with NaN values, less features but more samples, or more features but less samples). In the "raw" (i.e., before cleaning and preparation) dataset created, the UPs are at least containing: (age range, sex) OR (location, user_tags). However, many samples are a combination of those and all have additional features/information (e.g., number of cities visited, etc.).
@@ -39,7 +39,7 @@ Moreover, on average, around 1 out of 20 samples is collected (as it meets the c
 Hence, on average with a margin for error, one sample is collected every ~100s. 
 Therefore, to obtain 10k samples, the program needs to run for ~10^6 seconds. This means that ~278h / ~12 days are needed to collect 10k samples (given the current collection criterion).
 
-Considering that we go over 20 pages of a restaurant on average (given that the hyper-parameter of number_of_pages_to_scrape_per_restaurant is set to 30), 
+Considering that we go over 20 pages of a restaurant on average (given that the hyper-parameter of nb_pages is set to 30), 
 and that there are 15 reviews (samples) per page, we have ~(15*20)/20 = 15 samples collected per restaurant. Therefore, ~666 restaurants are needed to obtain 10k samples, which is achieved using around 20 cities. 
 
 #### **Notes**
@@ -166,7 +166,7 @@ The file format is JSON.
 | review_data 	| dictionary that contains the fields ``restaurant_reviewed_url``, ``review_date``, ``review_city``, ``review_lang``, ``review_title``, ``review``|
 | profile 	| dictionary that contains the ``user_data`` and ``history`` fields	|
 
-Within the field profile:
+Within the field ``profile``:
 | field  | description 	|
 |---	|---	|
 |user_data 	| dictionary that contains the fields ``user_id_link``, ``user_id``, ``user_name``, ``user_ta_level``, ``user_age_range``, ``user_sex``, ``user_location``, ``user_nb_contributions``, ``user_nb_cities_visited``, ``user_nb_helpful_votes``, ``user_nb_photos``, ``user_tags``	|
@@ -192,7 +192,7 @@ Within the field ``output`` of the field ``history``:
 | review_rating 	| value of the target output; here ``review_rating`` is the target output but it could be a different one	|
 
 
-For now, we do not perform prompt engineering to find a suitable prompt template to wrap the input data.
+For now, we do not perform prompt engineering to find a suitable prompt template to wrap the input data. Hence, the general input field within a sample currently contains a dummy string "HERE PUT PROMPT".
 
 
 #### **For TA_final_dataset_EN_3K.csv in its LaMP version**
