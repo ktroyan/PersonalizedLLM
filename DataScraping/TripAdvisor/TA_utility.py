@@ -64,7 +64,7 @@ def print_dataframe_info(dataset_df, column_names):
 # Clean the dataset by removing duplicates
 def remove_duplicated_samples(dataset):
     print("Shape of uncleaned dataset: ", dataset.shape)
-    dataset.drop_duplicates(keep=False, inplace=True)
+    dataset.drop_duplicates(subset = ['user_id_link', 'review'], keep=False, inplace=True)
     print("Shape of cleaned dataset: ", dataset.shape)
     # print('Cleaned dataset (simply dropped duplicates created by potential scraping issues):\n', dataset)
     return dataset
