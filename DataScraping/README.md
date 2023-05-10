@@ -192,10 +192,10 @@ Within the field ``output`` of the field ``history``:
 | review_rating 	| value of the target output; here ``review_rating`` is the target output but it could be a different one	|
 
 
-For now, we do not do perform prompt engineering to find a suitable prompt template to wrap the input data.
+For now, we do not perform prompt engineering to find a suitable prompt template to wrap the input data.
 
 
-#### **For TA_final_dataset_EN_3K.csv to its LaMP version**
+#### **For TA_final_dataset_EN_3K.csv in its LaMP version**
 The train input/output dataset contains 2472 samples.
 
 
