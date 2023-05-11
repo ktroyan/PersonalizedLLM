@@ -12,8 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 # Get the webdriver object through the driver exe file and set its options
 def get_driver():
     # load the chrome driver with options
-    chrome_driver_path = "C:/Users/klimm/Documents/ETHZ/Semester Project/customizedLLM/DataScraping/chromedriver_win32/chromedriver.exe"  # path to the chromedriver	
-    # chrome_driver_path = "C:\\Users\\klimm\\Documents\\ETHZ\\Semester Project\\customizedLLM\\DataScraping\\chromedriver_win32\\chromedriver.exe"  # path to the chromedriver	
+    # chrome_driver_path = "./DataScraping/chromedriver_win32/chromedriver.exe"  # path to the chromedriver	
     
     chrome_options = Options()
     user_agent = "researcher" + ''.join(random.choices(string.ascii_lowercase, k=20))  # random user agent name
