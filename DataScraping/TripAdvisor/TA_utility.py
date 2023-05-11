@@ -7,6 +7,8 @@ import string
 import pandas as pd
 import math
 
+from webdriver_manager.chrome import ChromeDriverManager
+
 # Get the webdriver object through the driver exe file and set its options
 def get_driver():
     # load the chrome driver with options
@@ -26,8 +28,12 @@ def get_driver():
     # chrome_options.add_argument("--no-sandbox")
     # chrome_options.add_argument("--disable-dev-shm-usage")
     # chrome_options.add_argument("--headless")     # run the script without having a browser window open
-    driver = webdriver.Chrome(executable_path=chrome_driver_path, chrome_options=chrome_options)  # creates a web driver; general variable (will not be passed to a function)
+    
+    # driver = webdriver.Chrome(executable_path=chrome_driver_path, chrome_options=chrome_options)  # creates a web driver; general variable (will not be passed to a function)
+    driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)   # this allows to manage better the chrome driver version (without having to download it manually and specify the path)
+    
     # driver.maximize_window()
+
 
     return driver
 
