@@ -110,7 +110,7 @@ if __name__ == "__main__":
         
     command_line_parser = argparse.ArgumentParser()
 
-    command_line_parser.add_argument("--lamp_dataset_index", type=str, default=None, help="LaMP dataset version. E.g., 1, 2, 3, etc.")
+    command_line_parser.add_argument("--lamp_dataset_index", type=str, default=None, help="LaMP dataset index. E.g., 1, 2, 3, etc.")
     command_line_parser.add_argument("--lamp_8_samples_version", type=str, default=None, help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
 
     args = command_line_parser.parse_args()

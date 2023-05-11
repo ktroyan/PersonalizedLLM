@@ -9,7 +9,7 @@ import json
 import openai
 
 import sklearn
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, mean_absolute_error, mean_squared_error
 
 from revChatGPT.V3 import Chatbot
 
@@ -36,9 +36,15 @@ def get_dataset_splits(datasets_path):
 def train(dataset_df):
     pass
 
-def compute_accuracy(predictions, gt_targets):
+def compute_metrics(predictions, gt_targets):
     
     print("Accuracy score: ", accuracy_score(gt_targets, predictions))
+    # print("F1 score: ", f1_score(gt_targets, predictions, average='macro'))
+    # print("Precision score: ", precision_score(gt_targets, predictions, average='macro'))
+    # print("Recall score: ", recall_score(gt_targets, predictions, average='macro'))
+    print("Mean Absolute Error (MAE): ", mean_absolute_error(gt_targets, predictions))
+    print("Root Mean Squared Error (RMSE): ", mean_squared_error(gt_targets, predictions, squared=False))
+
 
 def evaluate(dataset_df):
 
@@ -90,11 +96,8 @@ def evaluate(dataset_df):
         print("GT targets: ", gt_targets)
         print("Predictions: ", outputs)
 
-        iterator_gt_targets = map(lambda integer_value: str(integer_value), gt_targets)
-        gt_targets = list(iterator_gt_targets)
-
-        iterator_outputs = map(lambda integer_value: str(integer_value), outputs)
-        outputs = list(iterator_outputs)
+        print(f"Computing metrics for {i} samples...")
+        compute_metrics(outputs, gt_targets)
 
         return gt_targets, outputs 
 
@@ -102,14 +105,8 @@ def evaluate(dataset_df):
     print("GT targets: ", gt_targets)
     print("Predictions: ", outputs)
 
-    iterator_gt_targets = map(lambda integer_value: str(integer_value), gt_targets)
-    gt_targets = list(iterator_gt_targets)
-
-    iterator_outputs = map(lambda integer_value: str(integer_value), outputs)
-    outputs = list(iterator_outputs)
-
-    print("GT targets: ", gt_targets)
-    print("Predictions: ", outputs)
+    print(f"Computing metrics for {len(gt_targets)} samples...")
+    compute_metrics(outputs, gt_targets)
 
     return gt_targets, outputs
 
@@ -121,8 +118,8 @@ if __name__ == '__main__':
 
     command_line_parser = argparse.ArgumentParser()
 
-    command_line_parser.add_argument("--OPENAI_API_KEY", type=str, default=None, help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
-    command_line_parser.add_argument("--lamp_dataset_index", type=str, default=None, help="LaMP dataset version. E.g., 1, 2, 3, etc.")
+    command_line_parser.add_argument("--OPENAI_API_KEY", type=str, default=None, help="A valid OpenAI API key.")
+    command_line_parser.add_argument("--lamp_dataset_index", type=str, default=None, help="LaMP dataset index. E.g., 1, 2, 3, etc.")
     command_line_parser.add_argument("--lamp_8_samples_version", type=str, default=None, help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
 
     args = command_line_parser.parse_args()
@@ -142,13 +139,20 @@ if __name__ == '__main__':
     # train(train_df)
 
     gt_targets, outputs = evaluate(val_df)
+
+    # convert the lists of integers to lists of strings
+    iterator_gt_targets = map(lambda integer_value: str(integer_value), gt_targets)
+    gt_targets = list(iterator_gt_targets)
+
+    iterator_outputs = map(lambda integer_value: str(integer_value), outputs)
+    outputs = list(iterator_outputs)
+
+    # save the ground truth targets and the predictions in files
     with open('./Experiment/Data/OAI/gt_targets.txt','w') as f:
         f.write('\n'.join(gt_targets))
 
     with open('./Experiment/Data/OAI/predictions.txt','w') as f:
         f.write('\n'.join(outputs))
-
-    compute_accuracy(outputs, gt_targets)
 
     # predict(test_df)
 
