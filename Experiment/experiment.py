@@ -89,7 +89,7 @@ def evaluate(dataset_df):
             
             outputs.append(int(float(output)))
 
-    except openai.error.RateLimitError as e:
+    except openai.error.RateLimitError as e:    # OAI API rate limit is reached
         print("Exception: ", e)
         gt_targets = dataset_df['completion'].tolist()
         gt_targets = gt_targets[:i]
@@ -114,31 +114,7 @@ def evaluate(dataset_df):
 def predict(dataset_df):
     pass
 
-if __name__ == '__main__':
-
-    command_line_parser = argparse.ArgumentParser()
-
-    command_line_parser.add_argument("--OPENAI_API_KEY", type=str, default=None, help="A valid OpenAI API key.")
-    command_line_parser.add_argument("--lamp_dataset_index", type=str, default=None, help="LaMP dataset index. E.g., 1, 2, 3, etc.")
-    command_line_parser.add_argument("--lamp_8_samples_version", type=str, default=None, help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
-
-    args = command_line_parser.parse_args()
-
-    OPENAI_API_KEY = args.OPENAI_API_KEY
-    lamp_dataset_index = args.lamp_dataset_index
-    lamp_8_samples_version = args.lamp_8_samples_version
-
-    # openai.api_key = os.getenv("OPENAI_API_KEY")
-
-    openai.api_key = OPENAI_API_KEY
-
-    datasets_path = get_path_to_data(lamp_dataset_index, lamp_8_samples_version)
-
-    train_df, val_df, test_df = get_dataset_splits(datasets_path)
-
-    # train(train_df)
-
-    gt_targets, outputs = evaluate(val_df)
+def save_results_to_file(gt_targets, outputs):
 
     # convert the lists of integers to lists of strings
     iterator_gt_targets = map(lambda integer_value: str(integer_value), gt_targets)
@@ -154,9 +130,32 @@ if __name__ == '__main__':
     with open('./Experiment/Data/OAI/predictions.txt','w') as f:
         f.write('\n'.join(outputs))
 
+if __name__ == '__main__':
+
+    command_line_parser = argparse.ArgumentParser()
+
+    command_line_parser.add_argument("--OPENAI_API_KEY", type=str, default=None, help="A valid OpenAI API key.")
+    command_line_parser.add_argument("--lamp_dataset_index", type=str, default=None, help="LaMP dataset index. E.g., 1, 2, 3, etc.")
+    command_line_parser.add_argument("--lamp_8_samples_version", type=str, default=None, help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
+    command_line_parser.add_argument("--model_name", type=str, default="GPT-3.5-turbo", help="Model name (e.g., GPT-3.5-turbo, Flan-T5-base, etc.)")
+
+    args = command_line_parser.parse_args()
+
+    openai.api_key = args.OPENAI_API_KEY
+    lamp_dataset_index = args.lamp_dataset_index
+    lamp_8_samples_version = args.lamp_8_samples_version
+    model_name = args.model_name
+
+    # openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    datasets_path = get_path_to_data(lamp_dataset_index, lamp_8_samples_version)
+
+    train_df, val_df, test_df = get_dataset_splits(datasets_path)
+
+    # trained_model = train(train_df)
+
+    gt_targets, outputs = evaluate(val_df)
+
+    save_results_to_file(gt_targets, outputs)
+
     # predict(test_df)
-
-
-
-
-
