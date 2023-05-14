@@ -261,6 +261,8 @@ def start_scraping(driver, data_writer, path_to_restaurant_file, restaurant_full
 
     nb_of_samples_added = 0
 
+    restaurant_index_resume = 0
+
     try:
 
         # iterate over the restaurants (urls) to scrape from the file TA_restaurants_urls.csv
@@ -455,11 +457,10 @@ if __name__ == "__main__":
     data_full_row_header = id_user_info_header + basic_user_info_header + additional_user_info_header + restaurant_review_header
 
     # write header of the csv file if there is no header yet
-    with open(path_to_data_file, "r") as f:
-        try:
-            data_file_has_header = csv.Sniffer().has_header(f.read(1024))
-        except csv.Error:   # file is empty
-            data_file_has_header = False
+    if os.stat(path_to_data_file).st_size == 0:
+        data_file_has_header = False
+    else:
+        data_file_has_header = True
 
     if not(data_file_has_header):
         # write header of the csv file
@@ -484,14 +485,6 @@ if __name__ == "__main__":
     # finish properly with the driver
     driver.close()
     driver.quit()
-
-    # clean the dataset (i.e., remove duplicates)
-    path_data_file = f'./TripAdvisor/Data/TA_data_{language_to_scrape}.csv'
-    path_cleaned_dataset = f'./TripAdvisor/Data/TA_cleaned_data_{language_to_scrape}.csv'
-    clean_dataset_df = TA_utility.remove_duplicates_in_dataset(path_data_file, path_cleaned_dataset)
-
-    # path_dataset_xml = f'./Data/TA_cleaned_data_{language_to_scrape}.xml'
-    # TA_utility.convert_csv_to_xml(path_cleaned_dataset, path_dataset_xml)
 
     # time spent for the full scraping run
     end_time = time.time()
