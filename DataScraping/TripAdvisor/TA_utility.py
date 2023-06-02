@@ -1,11 +1,9 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support import expected_conditions as EC
-
 import random
 import string
 import pandas as pd
-import math
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -22,7 +20,6 @@ def get_driver():
     chrome_options.add_extension('./chromedriver_win32/istilldontcareaboutcookies-chrome-1.1.1_0.crx')     # to get a crx to load: https://techpp.com/2022/08/22/how-to-download-and-save-chrome-extension-as-crx/
     chrome_options.add_argument("start-maximized")
     chrome_options.add_argument("disable-infobars")
-    # chrome_options.add_argument(r"--user-data-dir=/Users/klimm/AppData/Local/Google/Chrome/User Data") 
     # chrome_options.add_argument(r'--profile-directory=Default')
     # chrome_options.add_argument("--no-sandbox")
     # chrome_options.add_argument("--disable-dev-shm-usage")
@@ -32,7 +29,6 @@ def get_driver():
     driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)   # this allows to manage better the chrome driver version (without having to download it manually and specify the path)
     
     # driver.maximize_window()
-
 
     return driver
 
@@ -64,16 +60,19 @@ def print_dataframe_info(dataset_df, column_names):
         # for j in range(i+1, len(column_names)):
             # print(f"Number of rows in {column_names[i]} AND {column_names[j]} WITH NaN value: ", len(dataset_df[dataset_df[column_names[i]].isna() & dataset_df[column_names[j]].isna()]))
             # print(f"Number of rows in {column_names[i]} AND {column_names[j]} WITHOUT NaN value: ", len(dataset_df) - len(dataset_df[dataset_df[column_names[i]].isna() & dataset_df[column_names[j]].isna()]))
+    print("\n")
 
 
-# Clean the dataset by removing duplicates
+# Clean the dataset by removing duplicates; duplicates are detected considering only the two columns/features user_id_link and review
+# Important NOTE: as the scraping was being done, a same user could be scraped several times. But since the samples were scraping at different
+# moments in time, the UP data could be different (e.g., the user took posted more pictures). Therefore, we have to decide what to do with
+# such samples (e.g., homogenize the UP data, or simply keep them with slightly different UP data in some columns/features) 
 def remove_duplicated_samples(dataset):
+    print("Removing duplicated samples...")
     print("Shape of uncleaned dataset: ", dataset.shape)
     dataset.drop_duplicates(subset = ['user_id_link', 'review'], keep=False, inplace=True)
     print("Shape of cleaned dataset: ", dataset.shape)
-    # print('Cleaned dataset (simply dropped duplicates created by potential scraping issues):\n', dataset)
     return dataset
-
 
 # Clean the dataset by removing samples that contain a review that has not been expanded
 def remove_samples_unexpanded_review(dataset):
@@ -85,21 +84,87 @@ def remove_samples_unexpanded_review(dataset):
     print("Shape of cleaned dataset: ", dataset.shape)
     return dataset
 
+# convert float values to int; values were scraped as float although they are int
+def convert_float_to_int_in_columns(dataset, column_names):
+    print("Converting float to int in columns: ", column_names)
+    for column in column_names:
+        dataset[column] = dataset[column].astype(int)
+    return dataset
+
+# replace NaN values by 0 for the relevant columns/features
+def replace_nan_values_by_zero(dataset, column_names):
+    print(f"Replacing NaN values by 0 for the relevant columns/features [{column_names}]...")
+    for column in column_names:
+        dataset[column].fillna(0, inplace=True)
+    return dataset
+
+def drop_unrequired_columns(dataset, columns_to_drop):
+    # TODO: here, remove columns that are not allowed for privacy reasons (e.g., user_id_link, user_id, user_name, etc.)
+    # Drop columns that should not be present in the final dataset
+    print(f"Droping column(s) [{columns_to_drop}] that should not be part of the final dataset...")
+    print("Shape of uncleaned dataset: ", dataset.shape)
+    print("Columns of uncleaned dataset: ", dataset.columns)
+    for column in columns_to_drop:
+        dataset.drop(columns=column, inplace=True)
+    print("Shape of cleaned dataset: ", dataset.shape)
+    return dataset
+
+def remove_nan_valued_samples(dataset):
+    print("Removing samples that still contain NaN values...")
+    print("Shape of uncleaned dataset: ", dataset.shape)
+    dataset.dropna(inplace=True)    # whether the the value is empty or has N/A or NaN value, the sample will be dropped
+    print("Shape of cleaned dataset: ", dataset.shape)
+    return dataset
 
 # Create the final dataset to be used further in the project; essentially drop columns that are not needed, drop rows that contain NaN values, and name the file properly before saving it
-def create_final_dataset(dataset, language_scraped, column_names):
-    print("Droping column(s)... Removing samples that contain a NaN value...")
+def create_final_dataset(path_data, path_data_cleaned, partial_path_final_dataset, language_scraped):
 
-    for column in column_names:
-        dataset.drop(columns=column, inplace=True)
+    ## Drop columns that should not be present in the final dataset
+    dataset = pd.read_csv(path_data, delimiter="\t", encoding="utf-8", )
+    columns_to_drop = ['user_id_hash']
+    clean_dataset = drop_unrequired_columns(dataset, columns_to_drop)
+    clean_dataset.to_csv(path_data_cleaned, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
 
-    dataset.dropna(inplace=True)
-    print("Final dataset shape: ", dataset.shape)
+    ## Remove duplicated samples in dataset
+    dataset = pd.read_csv(path_data_cleaned, delimiter="\t", encoding="utf-8", )    # initially, load the untouched/uncleaned dataset
+    clean_dataset = remove_duplicated_samples(dataset)
+    clean_dataset.to_csv(path_data_cleaned, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
     
-    nb_samples_name_k = 10**(len(str(len(dataset)))-1)
-    naming_k = str((math.floor(len(dataset) / nb_samples_name_k) * nb_samples_name_k)).replace("0", "") + "K"
-    path_final_dataset = f'./TripAdvisor/Data/TA_final_dataset_{language_scraped.upper()}_{naming_k}.csv'
+    ## Remove samples with "...More" (i.e., review that did not get expanded) in the review text column of the dataset
+    dataset = pd.read_csv(path_data_cleaned, delimiter="\t", encoding="utf-8", )
+    clean_dataset = remove_samples_unexpanded_review(dataset)
+    clean_dataset.to_csv(path_data_cleaned, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
+
+    ## TODO: transform the city names that were incorrectly saved due to scraping issues (see the Doc file)
+    # ...
+
+    ## Some columns/features that particularly matter (e.g., user tags) and that have NaN values should have their NaN values replaced by 0 IF relevant (e.g., nb_photos, nb_helpful_votes, etc.)
+    dataset = pd.read_csv(path_data_cleaned, delimiter="\t", encoding="utf-8", )
+    columns_to_nan_to_zero = ['user_nb_contributions', 'user_nb_cities_visited', 'user_nb_helpful_votes', 'user_nb_photos']     # columns/features for which we should replace NaN values by 0
+    clean_dataset = replace_nan_values_by_zero(dataset, columns_to_nan_to_zero)
+    clean_dataset.to_csv(path_data_cleaned, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
+
+    ## Some columns/features whose samples containing NaN values should be discarded 
+    # Such columns/features are: user_ta_level   user_age_range	user_sex	user_location   user_tags restaurant_reviewed_url	review_date	review_city	review_lang	review_rating	review_title	review
+    dataset = pd.read_csv(path_data_cleaned, delimiter="\t", encoding="utf-8", )
+    clean_dataset = remove_nan_valued_samples(dataset)
+    clean_dataset.to_csv(path_data_cleaned, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
+
+    ## Convert float values to int; values were scraped as float although they are int
+    dataset = pd.read_csv(path_data_cleaned, delimiter="\t", encoding="utf-8", )
+    float_to_int_columns = ['user_ta_level', 'user_nb_contributions', 'user_nb_cities_visited', 'user_nb_helpful_votes', 'user_nb_photos', "review_rating"]
+    clean_dataset = convert_float_to_int_in_columns(dataset, float_to_int_columns)
+    clean_dataset.to_csv(path_data_cleaned, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
+
+    ## Name the file properly before saving it
+    dataset = pd.read_csv(path_data_cleaned, delimiter="\t", encoding="utf-8", )
+    naming_k = str(len(dataset) // 1000) + "K"
+    path_final_dataset = partial_path_final_dataset + f'_{naming_k}.csv'
     dataset.to_csv(path_final_dataset, sep="\t", encoding="utf-8", index=False)   # convert the pandas dataframe to a CSV file
+    
+    print("Final dataset shape: ", dataset.shape)
+
+    # This yields the final dataset (and its path) that can be used further in the project
     return dataset, path_final_dataset
 
 
@@ -112,6 +177,8 @@ def update_scraped_lang(df1, df1_col_name, df2, df2_col_name, updated_file_path,
             if row_value_df1 == row_value_df2 and (language_to_scrape not in df2.scraped_lang.iloc[index].split(',')):
                 df2.scraped_lang[index] = df2.scraped_lang.iloc[index] + "," + language_to_scrape   # update the scraped_lang column of df2
     
+    # TODO: remove the first comma in the scraped_lang column
+
     df2.to_csv(updated_file_path, sep="\t", encoding="utf-8", index=False)  
 
 

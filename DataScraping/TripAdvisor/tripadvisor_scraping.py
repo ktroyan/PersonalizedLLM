@@ -11,19 +11,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 import os
 from os.path import exists
-import sys
 import time
 import csv
 import argparse
-import pandas as pd    
 import hashlib
 import base64
 import re
-import random
-import string
 from collections import OrderedDict
-import json
-import pickle
 
 def collect_restaurants_urls():
     print("Currently collecting restaurants to scrape...")
@@ -43,7 +37,6 @@ def open_restaurant_webpage(restaurant_url):
 
 def scroll_to_reviews_panel(driver, wait_driver):
     # scroll down to reach the general reviews panel
-    # dummy_reviews_point_for_scroll = driver.find_element(by=By.XPATH, value="//div[@class='title_text']")
     dummy_reviews_point_for_scroll = wait_driver.until(EC.visibility_of_element_located((By.XPATH, "//div[@class='title_text']")))
     driver.execute_script(
     "arguments[0].scrollIntoView();",   # can add the following arg to scrollIntoView(): {behavior: 'smooth', block: 'end', inline: 'end'}
@@ -51,7 +44,7 @@ def scroll_to_reviews_panel(driver, wait_driver):
 
 def remove_sticky_bar(driver):
     try:
-        # TODO: See if null check OK for l and l.parentNode
+        # TODO: Improve sticky bar handling
         # remove the sticky bar to avoid clicking on it
         # wait_driver.until(EC.visibility_of_element_located((By.XPATH, "//div[normalize-space()='Show reviews that mention']")))
         driver.execute_script("""
@@ -141,7 +134,6 @@ matchers = {
     "user_ta_level": lambda item: re.search("Level ([0-9]+)", item),
     "user_age_range": lambda item: re.search("[0-9][0-9]-[0-9][0-9]", item) or re.search("[0-9][0-9]\+", item),
     "user_sex": lambda item: re.search("woman", item) or re.search("man", item),
-    # "user_location": lambda item: re.search("[fF]rom ([a-zA-Z]+, [a-zA-Z ]+)", item),
     "user_location": lambda item: re.search("[fF]rom (.*)", item),
     "user_nb_contributions": lambda item: re.search("([0-9]+) Contributions", item),
     "user_nb_cities_visited": lambda item: re.search("([0-9]+) Cities visited", item),
@@ -249,6 +241,8 @@ def rewrite_restaurants_urls_file(path_to_restaurant_file, restaurant_full_row_h
 # this function goes over a list of restaurants and collects the user profiles and associated reviews of each restaurant in a given language if the colelction criterion is met
 def start_scraping(driver, data_writer, path_to_restaurant_file, restaurant_full_row_header, language_to_scrape, nb_of_pages_to_scrape_per_restaurant, restaurant_url_index=0):
     
+    print("Starting to scrape TripAdvisor...")
+
     # check if the file containing the urls of the restaurants to scrape exists, if not, create it by running the appropriate script
     if not("TA_restaurants_urls.csv" in os.listdir("./TripAdvisor/Data")):
         # collect the restaurants urls to scrape and write them in the file TA_restaurants_urls.csv

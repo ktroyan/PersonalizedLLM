@@ -8,7 +8,6 @@ import time
 import csv
 
 
-
 def open_website(url):
     # open the website
     driver.get(url)  
@@ -107,6 +106,8 @@ if __name__ == "__main__":
     with open("./TripAdvisor/TA_cities.txt", "r") as file:
         cities_to_scrape = [line.rstrip() for line in file]
 
+    print("Starting to collect TripAdvisor restaurants...")
+
     total_nb_restaurants_urls = get_restaurants_urls(cities_to_scrape)
     print(f"{total_nb_restaurants_urls} restaurants urls collected in total!")
 
@@ -115,4 +116,5 @@ if __name__ == "__main__":
     driver.quit()
 
     end_time = time.time()
+    print("Finished collecting TripAdvisor restaurants!")
     print("Time elapsed for the run: ", int(end_time - start_time) // 60, " minutes and ", int(end_time - start_time) % 60, " seconds")

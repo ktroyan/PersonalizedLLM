@@ -36,7 +36,6 @@ def compute_stats(dataset_df):
                 unique_locations = dataset_df[column_name].unique()
                 print("\n", column_name, " has ", len(unique_locations), " unique values in this dataset which are: ", unique_locations)
 
-                
             else:
                 print("\n", column_name, " has the following unique values in this dataset: ", dataset_df[column_name].unique())
 
@@ -68,16 +67,15 @@ def compute_stats(dataset_df):
     # compute the average review text length
     print("\nAverage review length: ", dataset_df['review'].str.len().mean(), " characters.")
 
-    # compute the average review text length per language
+    # TODO: implement further stats computation
+
+    # E.g.: compute the average review text length per language
     # ...
-
-
 
 
 
 if __name__ == "__main__":
     
-    # start time when running the script
     start_time = time.time()
 
     command_line_parser = argparse.ArgumentParser()
@@ -92,6 +90,5 @@ if __name__ == "__main__":
 
     compute_stats(dataset_df)
 
-    # time spent for the full scraping run
     end_time = time.time()
     print("Time elapsed to compute stats: ", int(end_time - start_time) // 60, " minutes and ", int(end_time - start_time) % 60, " seconds")
