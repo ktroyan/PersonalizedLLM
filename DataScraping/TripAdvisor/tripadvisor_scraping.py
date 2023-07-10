@@ -271,7 +271,7 @@ def start_scraping(driver, data_writer, path_to_restaurant_file, restaurant_full
             open_restaurant_webpage(restaurant_url)
         
             time.sleep(3)
-            
+
             # Scroll down to the reviews panel
             scroll_to_reviews_panel(driver, wait_driver)
 
@@ -299,7 +299,7 @@ def start_scraping(driver, data_writer, path_to_restaurant_file, restaurant_full
                 continue    # go to the next restaurant
         
             # iterate over the restaurant's pages
-            for page_index in range(0, nb_of_pages_to_scrape_per_restaurant):
+            for page_index in range(0, start_from_page_k + nb_of_pages_to_scrape_per_restaurant):
 
                 time.sleep(3)
 
@@ -307,57 +307,59 @@ def start_scraping(driver, data_writer, path_to_restaurant_file, restaurant_full
 
                 print(f"{len(reviews_container)} reviews found on page {page_index+1}")
                 
-                for review_index, element in enumerate(reviews_container):   # a container element is a user review
-                    print(f"Entered in review {review_index+1} from page {page_index+1}")
+                if page_index >= start_from_page_k:
 
-                    # if the user review is a review translated from English to another language (e.g., zhCH), then skip it; TODO: choose if still need to collect it or not
-                    # if skip_translated_review(element):    
-                    #     continue
+                    for review_index, element in enumerate(reviews_container):   # a container element is a user review
+                        print(f"Entered in review {review_index+1} from page {page_index+1}")
 
-                    # Expand/Open the review with "More..." on the page to get the full review
-                    try:
-                        expand_long_text_reviews(driver, wait_driver, element)
-                    except TimeoutException:
-                        print("'More' button not found for this review")
-                        continue
-                    except NoSuchElementException:
-                        print("'More' button not found for this review")
-                        continue
-                    except ElementClickInterceptedException:
-                        print("'More' button hidden for this review")
-                        continue
+                        # if the user review is a review translated from English to another language (e.g., zhCH), then skip it; TODO: choose if still need to collect it or not
+                        # if skip_translated_review(element):    
+                        #     continue
+
+                        # Expand/Open the review with "More..." on the page to get the full review
+                        try:
+                            expand_long_text_reviews(driver, wait_driver, element)
+                        except TimeoutException:
+                            print("'More' button not found for this review")
+                            continue
+                        except NoSuchElementException:
+                            print("'More' button not found for this review")
+                            continue
+                        except ElementClickInterceptedException:
+                            print("'More' button hidden for this review")
+                            continue
 
 
-                    # a user may have a deactivated account, in which case the user info overlay pop up will not appear
-                    try:
-                        open_user_overlay(element)
-                    except NoSuchElementException:
-                        print("No user info found for this review. Account has been deleted.")
-                        continue
+                        # a user may have a deactivated account, in which case the user info overlay pop up will not appear
+                        try:
+                            open_user_overlay(element)
+                        except NoSuchElementException:
+                            print("No user info found for this review. Account has been deleted.")
+                            continue
 
-                    # Get the user info
-                    user_info, user_info_element, user_overlay_info = get_user_info(wait_driver)
+                        # Get the user info
+                        user_info, user_info_element, user_overlay_info = get_user_info(wait_driver)
 
-                    # Parse the user info according to the hardcoded keywords in the list
-                    parsed_user_info = parse_user_info(user_info)
+                        # Parse the user info according to the hardcoded keywords in the list
+                        parsed_user_info = parse_user_info(user_info)
 
-                    # Get the user tags
-                    user_tags, nb_user_tags = get_user_tags(user_overlay_info)
-                    
-                    # Get the condition for the collection of the data sample
-                    collection_condition = define_collection_condition(parsed_user_info, nb_user_tags)
-
-                    if collection_condition:
-                        collect_sample(data_writer, city, restaurant_url, parsed_user_info, user_tags, user_info_element, element)
-                        nb_of_samples_added += 1
-                        print(f"Obtained review-user {review_index+1} of page {page_index+1} for restaurant {restaurant_url} in city {city}!")
-                        print(f"Hence added one more UP with a review for a total of {nb_of_samples_added} samples currently added for this run!")
+                        # Get the user tags
+                        user_tags, nb_user_tags = get_user_tags(user_overlay_info)
                         
-                    else:
-                        print(f"Skipped review-user {review_index+1} of page {page_index+1} for restaurant {restaurant_url} in city {city} due to lack of personal info")
+                        # Get the condition for the collection of the data sample
+                        collection_condition = define_collection_condition(parsed_user_info, nb_user_tags)
 
-                    close_user_overlay(driver, wait_driver)
-                
+                        if collection_condition:
+                            collect_sample(data_writer, city, restaurant_url, parsed_user_info, user_tags, user_info_element, element)
+                            nb_of_samples_added += 1
+                            print(f"Obtained review-user {review_index+1} of page {page_index+1} for restaurant {restaurant_url} in city {city}!")
+                            print(f"Hence added one more UP with a review for a total of {nb_of_samples_added} samples currently added for this run!")
+                            
+                        else:
+                            print(f"Skipped review-user {review_index+1} of page {page_index+1} for restaurant {restaurant_url} in city {city} due to lack of personal info")
+
+                        close_user_overlay(driver, wait_driver)
+                    
                 # go to the next reviews page of the restaurant
                 try:
                     go_to_next_page(driver)
@@ -426,14 +428,16 @@ if __name__ == "__main__":
     # get from the command line the scraping hyper-parameters (e.g., language) for scraping
     command_line_parser = argparse.ArgumentParser()
     command_line_parser.add_argument("--language", type=str, default="en", help="language to scrape for (e.g., en, fr, pt, es, it, de, zhCN, etc.)")
-    command_line_parser.add_argument("--nb_pages", type=int, default=3, help="number of pages to scrape per restaurant")
-    command_line_parser.add_argument("--resume_restaurant_url_index", type=int, default=0, help="index of the restaurant url to resume scraping from (e.g., 0, 1, 2, etc.) if needed")
+    command_line_parser.add_argument("--nb_pages", type=int, default=3, help="number of pages to scrape per restaurant.")
+    command_line_parser.add_argument("--resume_restaurant_url_index", type=int, default=0, help="index of the restaurant url to resume scraping from (e.g., 0, 1, 2, etc.) if needed.")
+    command_line_parser.add_argument("--start_from_page_k", type=int, default=0, help="index of the restaurants' page to start scraping from (e.g., 0, 1, 2, etc.) if skipping some of the beginning pages is needed.")
 
     args = command_line_parser.parse_args()
 
     language_to_scrape = args.language
     nb_of_pages_to_scrape_per_restaurant = args.nb_pages
     resume_restaurant_url_index = args.resume_restaurant_url_index
+    start_from_page_k = args.start_from_page_k
 
     # get the list of selected scrapable cities
     with open("./TripAdvisor/TA_cities.txt", "r") as file:

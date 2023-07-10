@@ -1,5 +1,5 @@
 # General Information
-An initial step of the project is to create a dataset to be part of a benchmark for the evaluation of Personalized Language Models (PLMs). The data were collected by scraping parts of the [TripAdvisor website](https://www.tripadvisor.com/), focusing on rich user profile (UP) data associated to natural language text contained in restaurant reviews as well as additional data.
+An initial step of the project is to create a dataset to be part of a benchmark for the evaluation of Personalized Language Models (PLMs). The data are collected by scraping parts of the [TripAdvisor website](https://www.tripadvisor.com/), focusing on rich user profile (UP) data associated to natural language text contained in restaurant reviews as well as additional feature data. 
 
 The main dataset has different versions depending on the language (e.g., EN, FR, multi-lingual, etc.) and the (rounded down to the thousand) number of samples (e.g., 3K, 10K, etc.). A dataset is for example: `TA_final_dataset_EN_3K.csv`. 
 
@@ -31,22 +31,28 @@ The current data collection process, executed through several python scripts ([s
 
 The [criterion](./TripAdvisor/tripadvisor_scraping.py#:~:text=def%20start_scraping) is important as it constitutes the basis of the samples collection. It was made relatively loose in order to give some margin to what would be the final dataset (e.g., when getting rid of samples with NaN values, less features but more samples, or more features but less samples). In the "raw" (i.e., before cleaning and preparation) dataset created, the UPs are at least containing: (age range, sex) OR (location, user_tags). However, many samples are a combination of those and all have additional features/information (e.g., number of cities visited, etc.).
 
+Considering that the *profile* of a user can contain other natural language texts (e.g., restaurant reviews) associated to the user, we can consider scraping more reviews per user. Note that the reviews do not necessarily have to be that of restaurants. We use the script file as
+```
+python ./DataScraping/TripAdvisor/tripadvisor_scrape_users_reviews.py
+```
+
 ### **Further collection details**
-The current data were collected using a list of 50 top cities, around 30 top restaurants per city, and maximum 30 pages per restaurant. There is a maximum of 15 reviews per page.  
+The current data were collected using a list of 50 top cities, around 30 top restaurants per city, and maximum 50 pages per restaurant. There is a maximum of 15 reviews per page.  
 
 For one scraping instance, we have one sample processed (and potentially collected) every ~4s (3-5 seconds). 
-Moreover, on average, around 1 out of 20 samples is collected (as it meets the current collection criterion).
-Hence, on average with a margin for error, one sample is collected every ~100s. 
-Therefore, to obtain 10k samples, the program needs to run for ~10^6 seconds. This means that ~278h / ~12 days are needed to collect 10k samples (given the current collection criterion).
+Moreover, on average, around 1 out of 20 samples is collected since it meets the current collection criterion.
+Hence, on average with a margin for error, one sample is collected every ~100s. Therefore, to obtain 10k samples, the program needs to run for ~10^6 seconds. This means that ~278h / ~12 days are needed to collect 10k samples (given the current collection criterion).
 
-Considering that we go over 20 pages of a restaurant on average (given that the hyper-parameter of ``nb_pages`` is set to 30), 
+Considering that we go over 20 pages of a restaurant on average given that the hyper-parameter of ``nb_pages`` is set to 30, 
 and that there are 15 reviews (samples) per page, we have ~(15*20)/20 = 15 samples collected per restaurant. Therefore, ~666 restaurants are needed to obtain 10k samples, which is achieved using around 20 cities. 
+
+Note that this process yields a higher bound for the number of samples since then, after post-processing, some of the samples do not get to be part of the dataset.
 
 #### **Notes**
 - After collecting those samples forming a "raw" dataset, the dataset will have to be cleaned.
-- Over 10k reviews, there are less than a few hundreds of reviews for which the "More" button to expand a text review was not clicked due to website scraping instability. 
-- For similar reasons, there are also a few duplicates from time to time, hence the dataset cleaning process at the end of scraping.
-- There could be some other languages that were not properly filtered by TripAdvisor.
+- Over 10k collected reviews, there are less than a few hundreds of reviews for which the "More" button to expand a text review was not clicked due to website scraping instability. 
+- For similar reasons, there are also a few duplicates occasionally.
+- There could be some mix of other languages that were not properly filtered by TripAdvisor.
 
 Below, we preview parts of what is seen during a scraping run to collect the data. 
 | image screenshot 	| description <img width=1000/>	|
@@ -211,8 +217,8 @@ Note that we can have many different "tasks" (input, profile, output) such as pr
 # Questions/Remarks
 - Not sure about my definition of the input data above in the LaMP dataset section.
 - How to define a suitable template prompt to wrap the input data as per the other LaMP benchmark datasets?
-- I still have to correct a few country names in the datasets. I will be able to do this easily once I will have gather more samples.
-- We could collect user bios (although rarely available and usually short) later since we have the urls to the users' profiles.
+- I still have to correct a few country names in the datasets. I will be able to do this easily once I will have gathered more samples.
+- We could collect user bios (although rarely available and usually short) and more reviews per user later since we have the urls to the users' profiles.
 
 # Notes
 - The collected data are for research purpose only. 

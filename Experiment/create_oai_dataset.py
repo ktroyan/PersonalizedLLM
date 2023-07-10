@@ -1,18 +1,13 @@
-import os
-import sys
-import time
-import csv
 import argparse
 import pandas as pd    
-import hashlib
-import base64
-import re
-import random
-import string
-from collections import OrderedDict
 import json
 
-def write_oai_dataset(new_dataset_folder_path, new_dataset_name, input_df, output_df=None):
+"""
+This scripts takes a LaMP dataset and formats it as per OpenAI recommendations for fine-tuning. 
+See: https://platform.openai.com/docs/guides/fine-tuning
+"""
+
+def write_oai_format_dataset(new_dataset_folder_path, new_dataset_name, input_df, output_df=None):
 
     samples = []
 
@@ -24,8 +19,8 @@ def write_oai_dataset(new_dataset_folder_path, new_dataset_name, input_df, outpu
             input_text = input_df.iloc[sample_index,1]
             # print(input_text)
             
-            profile_field = input_df.iloc[sample_index,2]
-            profile_texts += [profile_field[j]['text'] + ";" for j in range(len(profile_field))]
+            # profile_field = input_df.iloc[sample_index,2]
+            # profile_texts += [profile_field[j]['text'] + ";" for j in range(len(profile_field))]
             # print(profile_texts)
 
             if output_df is not None:
@@ -41,7 +36,7 @@ def write_oai_dataset(new_dataset_folder_path, new_dataset_name, input_df, outpu
         json.dump(samples, oai_dataset, indent=4)
 
 
-def create_openai_datasets(datasets, split_names, new_dataset_folder_path, new_dataset_name):
+def create_oai_format_datasets(datasets, split_names, new_dataset_folder_path, new_dataset_name):
 
     # json to pandas dataframe
     train_input_df = pd.DataFrame.from_dict(datasets[split_names[0]])    # train_input
@@ -52,15 +47,9 @@ def create_openai_datasets(datasets, split_names, new_dataset_folder_path, new_d
 
     test_input_df = pd.DataFrame.from_dict(datasets[split_names[4]])    # test_input
 
-    # print(val_input_df.head())
-    # print(val_output_df.head())
-
-    # print(val_input_df.shape)
-    # print(val_output_df.shape)
-
-    write_oai_dataset(new_dataset_folder_path, f'{new_dataset_name}_train.json', train_input_df, train_output_df)
-    write_oai_dataset(new_dataset_folder_path, f'{new_dataset_name}_val.json', val_input_df, val_output_df)
-    write_oai_dataset(new_dataset_folder_path, f'{new_dataset_name}_test.json', test_input_df, None)
+    write_oai_format_dataset(new_dataset_folder_path, f'{new_dataset_name}_train.json', train_input_df, train_output_df)
+    write_oai_format_dataset(new_dataset_folder_path, f'{new_dataset_name}_val.json', val_input_df, val_output_df)
+    write_oai_format_dataset(new_dataset_folder_path, f'{new_dataset_name}_test.json', test_input_df, None)
 
 def get_datasets(data_folder_path, lamp_dataset_index, lamp_8_samples_version, print_info=False):
 
@@ -70,7 +59,7 @@ def get_datasets(data_folder_path, lamp_dataset_index, lamp_8_samples_version, p
     if lamp_dataset_index == "8" and not lamp_8_samples_version:
         lamp_8_samples_version = "3K"
 
-    if (not lamp_dataset_index):
+    if not lamp_dataset_index:
         print("Please provide the LaMP dataset version or the LaMP_8 version. Exiting...")
         quit()
 
@@ -100,7 +89,7 @@ def get_datasets(data_folder_path, lamp_dataset_index, lamp_8_samples_version, p
             print(datasets[key].head())
             print("\n\n")
 
-    oai_dataset_folder_path = f'{data_folder_path}OAI/'
+    oai_dataset_folder_path = f'{data_folder_path}lamp_oai_reformatted/'
     oai_dataset_name = f'LaMP_{lamp_dataset_index}_dataset'
 
     return datasets, split_names, oai_dataset_folder_path, oai_dataset_name
@@ -125,4 +114,4 @@ if __name__ == "__main__":
     print(oai_dataset_folder_path)
     print(oai_dataset_name)
 
-    create_openai_datasets(datasets, split_names, oai_dataset_folder_path, oai_dataset_name)
+    create_oai_format_datasets(datasets, split_names, oai_dataset_folder_path, oai_dataset_name)
