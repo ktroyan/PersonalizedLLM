@@ -6,6 +6,19 @@ assert wandb.__version__ >= "0.15.3", "Please ensure you are using wandb v0.15.3
 
 import tiktoken
 
+def print_in_red(s):
+    print("\n\n \033[91m" + s + "\033[0m \n\n")
+          
+def print_in_green(s):
+    print("\n\n \033[92m" + s + "\033[0m \n\n")
+
+def print_in_yellow(s):
+    print("\n\n \033[93m" + s + "\033[0m \n\n")
+
+def print_in_blue(s):
+    print("\n\n \033[94m" + s + "\033[0m \n\n")
+
+
 def nb_tokens_in_string(string, encoding_name="gpt-3.5-turbo"):
     encoding = tiktoken.encoding_for_model(encoding_name)
     nb_tokens = len(encoding.encode(string))
