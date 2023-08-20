@@ -31,6 +31,7 @@ httpcore==0.17.0
 httpx==0.24.0
 idna==3.4
 joblib==1.2.0
+loguru
 marshmallow==3.19.0
 marshmallow-enum==1.5.1
 multidict==6.0.4

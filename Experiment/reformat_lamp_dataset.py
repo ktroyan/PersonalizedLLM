@@ -1,11 +1,16 @@
+"""
+This scripts takes a LaMP dataset in its official format and reformats it for it to later
+be used for evaluations of models such as (zero-shot) GPT-3.5-turbo.
+"""
+
 import argparse
 import pandas as pd    
 import json
 
-"""
-This scripts takes a LaMP dataset in its official format and reformats it for it to later
-be used for evaluations of models such as zero-shot GPT-3.5-turbo with Llama-index.
-"""
+from loguru import logger
+from utils import setup_loguru
+setup_loguru(logger)
+
 
 def create_formatted_dataset(new_dataset_folder_path, new_dataset_name, input_df, output_df=None):
 
@@ -19,15 +24,13 @@ def create_formatted_dataset(new_dataset_folder_path, new_dataset_name, input_df
                 uid = int(input_df.iloc[sample_index, 0])   # convert to int otherwise cannot dump json
 
                 input_text = input_df.iloc[sample_index, 1]
-                # print(input_text)
                 
                 profile_field = input_df.iloc[sample_index, 2]
-                # print(profile_field)
 
                 gold = output_df.iloc[sample_index, 1]
-                # print(gold)
+
                 target_output = gold['output']
-                # print(target_output)
+
                 samples.append({"uid": uid, "prompt": input_text, "completion": target_output, "profile": profile_field})
 
         elif output_df is None:   # test set has no output dataset as it is part of the private benchmark
@@ -36,10 +39,8 @@ def create_formatted_dataset(new_dataset_folder_path, new_dataset_name, input_df
                 uid = int(input_df.iloc[sample_index, 0])   # convert to int otherwise cannot dump json
 
                 input_text = input_df.iloc[sample_index, 1]
-                # print(input_text)
                 
                 profile_field = input_df.iloc[sample_index, 2]
-                # print(profile_field)
                 
                 samples.append({"uid": uid, "prompt": input_text, "completion": "", "profile": profile_field})
 
@@ -49,38 +50,10 @@ def create_formatted_dataset(new_dataset_folder_path, new_dataset_name, input_df
                 uid = int(input_df.iloc[sample_index, 0])   # convert to int otherwise cannot dump json
 
                 input_text = input_df.iloc[sample_index, 1]
-                # print(input_text)
                 
                 profile_field = input_df.iloc[sample_index, 2]
-                # print(profile_field)
                 
                 samples.append({"uid": uid, "prompt": input_text, "completion": "", "profile": profile_field})
-
-
-
-        # for sample_index in range(len(input_df)):
-            
-        #     uid = int(input_df.iloc[sample_index, 0])   # convert to int otherwise cannot dump json
-
-        #     input_text = input_df.iloc[sample_index, 1]
-        #     # print(input_text)
-            
-        #     profile_field = input_df.iloc[sample_index, 2]
-        #     # print(profile_field)
-
-        #     if output_df is not None:
-        #         gold = output_df.iloc[sample_index, 1]
-        #         # print(gold)
-        #         target_output = gold['output']
-        #         # print(target_output)
-
-        #         samples.append({"uid": uid, "prompt": input_text, "completion": target_output, "profile": profile_field})
-        #     else:   # test set has no output dataset as it is part of the private benchmark
-        #         samples.append({"uid": uid, "prompt": input_text, "completion": "", "profile": profile_field})
-
-        #     if "no_target" in new_dataset_name:
-        #         samples.append({"uid": uid, "prompt": input_text, "completion": "", "profile": profile_field})
-
 
         json.dump(samples, reformatted_dataset_file, indent=4)
 

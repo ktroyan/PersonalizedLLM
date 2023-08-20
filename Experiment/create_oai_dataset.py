@@ -1,11 +1,15 @@
-import argparse
-import pandas as pd    
-import json
-
 """
 This scripts takes a LaMP dataset and formats it as per OpenAI recommendations for fine-tuning. 
 See: https://platform.openai.com/docs/guides/fine-tuning
 """
+
+import argparse
+import pandas as pd    
+import json
+
+from loguru import logger
+from utils import setup_loguru
+setup_loguru(logger)
 
 def write_oai_format_dataset(new_dataset_folder_path, new_dataset_name, input_df, output_df=None):
 
@@ -13,21 +17,13 @@ def write_oai_format_dataset(new_dataset_folder_path, new_dataset_name, input_df
 
     dataset_path = new_dataset_folder_path
     with open(f'{dataset_path}{new_dataset_name}', 'w') as oai_dataset:
-        profile_texts = []
         for sample_index in range(len(input_df)):
             
             input_text = input_df.iloc[sample_index,1]
-            # print(input_text)
-            
-            # profile_field = input_df.iloc[sample_index,2]
-            # profile_texts += [profile_field[j]['text'] + ";" for j in range(len(profile_field))]
-            # print(profile_texts)
 
             if output_df is not None:
                 gold = output_df.iloc[sample_index,1]
-                # print(gold)
                 target_output = gold['output']
-                # print(target_output)
 
                 samples.append({"prompt": input_text, "completion": target_output})
             else:   # test set has no output dataset as in it is part of the private benchmark
