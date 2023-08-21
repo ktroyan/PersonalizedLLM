@@ -32,10 +32,11 @@ def get_dataset_splits(data_folder_path, dataset_version):
     train_dataset = None
     # train_dataset = pd.read_json(data_path + "_dataset_" + "train.json", orient='records')
     
-    # val_dataset = pd.read_json(data_path + "_dataset_" + "val.json", orient='records')    # TODO: change this to "val.json" when the dataset is ready
+    # val_dataset = pd.read_json(data_path + "_dataset_" + "val.json", orient='records')
     val_dataset = pd.read_json(data_path + "_dataset_" + "val_subset.json", orient='records')    # TODO: change this to "val.json" when the dataset is ready
     
-    test_dataset = pd.read_json(data_path + "_dataset_" + "test.json", orient='records')
+    test_dataset = None
+    # test_dataset = pd.read_json(data_path + "_dataset_" + "test.json", orient='records')
 
     return train_dataset, val_dataset, test_dataset
 
@@ -59,14 +60,14 @@ def batch_samples(dataset_df):
     logger.info(f"Using batches of size {config.request_batch_size} for the API requests.")
 
     # batch the samples to reduce the total number of API requests to perform
-    input_data_batched = [dataset_df['prompt'][i:i+config.request_batch_size] for i in range(0,len(dataset_df['prompt']), config.request_batch_size)]
+    input_data_batched = [dataset_df['input'][i:i+config.request_batch_size] for i in range(0,len(dataset_df['input']), config.request_batch_size)]
     return input_data_batched
 
 def predict(dataset_df, evaluation_state):
     logger.info(f"We consider the following dataset/dataframe of shape {dataset_df.shape}.")
     logger.info(f"Dataset head: {dataset_df.head()}")
 
-    total_nb_samples = len(dataset_df['prompt'])
+    total_nb_samples = len(dataset_df['input'])
 
     outputs = []
 
@@ -75,8 +76,6 @@ def predict(dataset_df, evaluation_state):
     input_data_batched = batch_samples(dataset_df)
 
     logger.info(f"INFO: \n total_number_samples: {total_nb_samples} \n uids: {uids} \n input_data_batched: {input_data_batched} \n outputs: {outputs} \n evaluation_state: {evaluation_state} \n")
-
-    logger.debug(" --- CALLING MAIN LLM FOR PREDICTIONS --- ")
 
     outputs, evaluation_state = run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state)
 

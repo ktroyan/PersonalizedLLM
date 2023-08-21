@@ -9,6 +9,7 @@ This file can be run as a script, or some of its functions are imported and used
 """
 
 import os
+import sys
 import time
 import argparse
 
@@ -22,7 +23,6 @@ import revChatGPT
 from revChatGPT.V1 import Chatbot as ChatbotV1
 from revChatGPT.V3 import Chatbot as ChatbotV3
 
-from oai_api import get_response_from_oai
 from revchatgpt_v1_api import get_response_from_revchatgpt_v1
 from revchatgpt_v3_api import get_response_from_revchatgpt_v3
 from churchless_api import get_response_from_churchless
@@ -47,7 +47,8 @@ from IPython.display import Markdown, display
 
 from loguru import logger
 from utils import setup_loguru
-setup_loguru(logger)
+setup_loguru(logger, os.path.basename(sys.argv[0]))
+
 
 # define the llm to be used for llama-index; to be used if the official OAI API is not used
 class MyLLM(CustomLLM):
@@ -75,7 +76,7 @@ class MyLLM(CustomLLM):
                     presence_penalty = 0.0,
                     frequency_penalty = 0.0,
                     reply_count = 1,
-                    system_prompt = "You are a state-of-the-art predictive model. You should only output predictions strictly respecting the output format."   # "You are ChatGPT, a large language model trained by OpenAI. Respond as concisely, straightforwardly and accurately as possible."
+                    system_prompt = "You are a concise state-of-the-art predictive model. You should only respond by strictly respecting the output format."   # "You are ChatGPT, a large language model trained by OpenAI. Respond as concisely, straightforwardly and accurately as possible."
                     )
         elif config.API_CHOICE == "churchless":
             pass
@@ -122,7 +123,7 @@ def index_documents(dataset_name, service_context=None):
     # Once data were ingested, LlamaIndex will help index the data into a format that’s easy to retrieve. 
     # Under the hood, LlamaIndex parses the raw documents into intermediate representations, calculates vector embeddings, and infers metadata. The most commonly used index is the VectorStoreIndex
     if config.API_CHOICE == "oai":
-        documents_indexed = GPTVectorStoreIndex.from_documents(documents, openai_api_key=os.environ['OPENAI_API_KEY'], name="dataset")
+        documents_indexed = GPTVectorStoreIndex.from_documents(documents, openai_api_key=os.environ['OPENAI_API_KEY'])
     else:
         # documents_indexed = GPTListIndex.from_documents(documents, service_context=service_context)
         # documents_indexed = ListIndex.from_documents(documents, service_context=service_context)
@@ -148,9 +149,11 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
     # 2) OR create a llama-index on the whole dataset file
     # This choice comes from the fact that the profile of a user is typically large while the number of samples in a dataset is relatively not.
 
-    # logger.info("Dataset: ", dataset_df, "\n")
-    # logger.info("Dataset shape: ", dataset_df.shape, "\n")
-    # logger.info("Dataset columns: ", dataset_df.columns())
+    # TODO: Investigate what vector store is the most relevant to use, the chunks, etc.
+
+    logger.info(f"Dataset: {dataset_df}")
+    logger.info(f"Dataset shape: {dataset_df.shape}")
+    # logger.info(f"Dataset columns: {dataset_df.columns()}")
 
     if config.API_CHOICE in ["V1", "V3", "churchless"]:
         # define the LLM for llama-index
@@ -250,12 +253,12 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
 
         response = str(query_engine.query(llama_prompt))
 
-        # logger.debug("[IN llama_index_input_prompts] Llama-index churchless response: \n" + response)
+        logger.debug(f"Llama-index churchless response: {response}")
 
         nb_tokens_in_llama_prompt = utils.nb_tokens_in_string(llama_prompt, encoding_name="gpt-3.5-turbo")
         nb_tokens_in_llama_response = utils.nb_tokens_in_string(response, encoding_name="gpt-3.5-turbo")
-        # logger.info("Number of tokens in llama-index prompt: ", nb_tokens_in_llama_prompt)
-        # logger.info("Number of tokens in llama-index response: ", nb_tokens_in_llama_response)
+        logger.info("Number of tokens in llama-index prompt: ", nb_tokens_in_llama_prompt)
+        logger.info("Number of tokens in llama-index response: ", nb_tokens_in_llama_response)
 
         llama_index_span = trace_tree.Span(name="llama-index", span_kind = trace_tree.SpanKind.TOOL)
         wb_setup.root_span.add_child_span(llama_index_span)
@@ -267,14 +270,13 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
         llama_index_span.attributes = {"token_usage_one_llama_exchange": tokens_used}
 
         if "***" in response:
-            # logger.debug("Llama-index response was not useful for this sample. The prompt will be the same as the sample prompt.")
-            dataset_df['prompt'][i] = sample_prompt
+            logger.debug("Llama-index response was not useful for this sample. The prompt will be the same as the sample prompt.")
         else: 
-            dataset_df['prompt'][i] = sample_prompt + "\nTo give more context, an example of correct prediction for this user is: " + response
+            dataset_df['prompt'][i] = sample_prompt + "\nTo help with the prediction, an example of correct prediction for an other sample of this user is the following. " + response
         
         new_input_prompt = dataset_df['prompt'][i]
 
-        # logger.debug("New input prompt: \n" + new_input_prompt)
+        logger.debug(f"New input prompt: {new_input_prompt}")
 
         # Write in the /results folder in a txt file the prompt and response for each sample
         with open(data_folder_path + 'results/llama_iteration_' + str(i) + '.txt', 'w') as f:
@@ -286,8 +288,6 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
 
         # NOTE: Wait to avoid being rate limited by the API
         time.sleep((0.1*i) % 30)
-
-    # logger.debug("\n\n --- END OF LLAMA INDEXING AND PROMPT AUGMENTATION --- \n\n")
 
     return dataset_df
 
@@ -358,4 +358,4 @@ if __name__ == "__main__":
     # save the dataset as json file
     llama_indexed_dataset_df.to_json(data_path + f"{dataset_split_name}_llama_indexed.json", orient='records')
 
-    logger.info(f"New dataset created at {data_path + dataset_split_name}_llama_indexed.json \n")
+    logger.info(f"New dataset created at {data_path + dataset_split_name}_llama_indexed.json")

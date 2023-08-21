@@ -25,7 +25,7 @@ def print_in_yellow(s):
 def print_in_blue(s):
     print("\n\n \033[94m" + s + "\033[0m \n\n")
 
-def setup_loguru(logger):
+def setup_loguru(logger, filename=None):
     def trace_only(record):
         return record["level"].name == "TRACE"
     def debug_only(record):
@@ -42,10 +42,17 @@ def setup_loguru(logger):
     logger.remove()
     current_date = datetime.now()
     formatted_date = current_date.strftime("%m-%d-%H")
-    log_filename = "./Experiment/logs/experiment_" + formatted_date + "H" + ".log"
+
+    if filename is not None:
+        log_filename = "./Experiment/logs/experiment_" + formatted_date + "H" + "_" + filename[:-3] + ".log"
+    else: 
+        log_filename = "./Experiment/logs/experiment_" + formatted_date + "H" + ".log"
+    
     fmt ='\n<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</> | <lvl>{level: <8}</> | <cyan>{name}:{function}:{line}</> | \n <lvl>{message}</>\n'
     logger.add(log_filename, level="TRACE", format=fmt)
-    logger.add(sys.stdout, format=fmt, filter=debug_only)
+    
+    logger.add(sys.stdout, level="DEBUG", format=fmt)
+    # logger.add(sys.stdout, format=fmt, filter=debug_only)
 
 def nb_tokens_in_string(string, encoding_name="gpt-3.5-turbo"):
     encoding = tiktoken.encoding_for_model(encoding_name)
