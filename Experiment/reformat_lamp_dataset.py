@@ -14,6 +14,48 @@ Note also that uid for LaMP_1 does not follow the official LaMP benchmark uid fo
 for ease of use through the programs. Instead, except in the uid of the profile field, the leading 0 was not used 
 (i.e., for validation it is 10, 11, 12, etc.) and it can easily be prepended later if needed.
 
+Below we describe briefly each of the first three LaMP datasets.
+
+**LaMP_1**
+Input file
+Fields:
+- id: as per the LaMP dataset convention (for the validation set: 010, 011, etc.)
+- input: asking what reference ([1] or [2]) was used for a paper with the given title and given the text references [1] and [2]
+- profile: list containing a field "title", a field "abstract", a field "id" (as usual, the id of the sample followed by the index of the profile element)
+
+Output file
+Fields:
+- task: LaMP_1
+- golds: a list of dictionaries with the fields "id" and "output" (e.g., [1] or [2])
+
+
+**LaMP_2**
+Input file
+Fields:
+- id: as per the LaMP dataset convention (for the validation set: 110, 111, etc.)
+- input: asking to predict which category (they are given between []) does the given article belong to
+- profile: a list of dictionaries with the fields "text", "title" (of the text), "category" and "id" (as usual, the id of the sample followed by the index of the profile element)
+
+Note that there are 15 different categories (i.e., classes).
+
+Output file
+Fields:
+- task: LaMP_2
+- golds: a list of dictionaries with the fields "id" and "output" (a topic, e.g., "politics", "education", etc.). 
+
+
+**LaMP_3**
+Input file
+Fields:
+- id: as per the LaMP dataset convention (for the validation set: 210, 211, etc.)
+- input: asking what is the score on a scale of 1 to 5 given the (product) review
+- profile: a list of dictionaries with the fields "text", "score" and "id"
+
+Output file
+Fields:
+- task: LaMP_3
+- golds: list of dictionaries with the fields "id" (id of the sample) and "output" (i.e., 1, 2, 3, 4 or 5)
+
 """
 
 import os

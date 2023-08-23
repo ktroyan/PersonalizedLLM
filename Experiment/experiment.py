@@ -11,7 +11,9 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import openai
 import revChatGPT
 
-from model_api import run_api
+import model_api_lamp1
+import model_api_lamp2
+import model_api_lamp3
 
 import utils
 from utils import wb_setup
@@ -42,13 +44,15 @@ def get_dataset_splits(data_folder_path, dataset_version):
 
 def train(dataset_df):
     """
-    Note that training/fine-tuning is not done for models such as GPT-3.5-turbo.
+    Training/fine-tuning is not done for models such as GPT-3.5-turbo.
+    # NOTE: Update 23.08.2023: OAI now supports fine-tuning for GPT-3.5-turbo.
+
     """
     raise NotImplementedError
 
 def compute_metrics(gt_targets, predictions):
     
-
+    # metrics reported for the official LaMP benchmark
     logger.info(f"Accuracy score: {accuracy_score(gt_targets, predictions)}")
     logger.info(f"Mean Absolute Error (MAE): {mean_absolute_error(gt_targets, predictions)}")
     logger.info(f"Root Mean Squared Error (RMSE):  {mean_squared_error(gt_targets, predictions, squared=False)}")
@@ -63,7 +67,7 @@ def batch_samples(dataset_df):
     input_data_batched = [dataset_df['input'][i:i+config.request_batch_size] for i in range(0,len(dataset_df['input']), config.request_batch_size)]
     return input_data_batched
 
-def predict(dataset_df, evaluation_state):
+def predict(dataset_df, dataset_version, evaluation_state):
     logger.info(f"We consider the following dataset/dataframe of shape {dataset_df.shape}.")
     logger.info(f"Dataset head: {dataset_df.head()}")
 
@@ -75,17 +79,34 @@ def predict(dataset_df, evaluation_state):
 
     input_data_batched = batch_samples(dataset_df)
 
-    logger.info(f"INFO: \n total_number_samples: {total_nb_samples} \n uids: {uids} \n input_data_batched: {input_data_batched} \n outputs: {outputs} \n evaluation_state: {evaluation_state} \n")
+    logger.info(f"total_number_samples: {total_nb_samples} \n uids: {uids} \n input_data_batched: {input_data_batched} \n outputs: {outputs} \n evaluation_state: {evaluation_state} \n")
 
-    outputs, evaluation_state = run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state)
+    if "LaMP_1" in dataset_version:
+        outputs, evaluation_state = model_api_lamp1.run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state, retry_formatting=False)
+    
+    elif "LaMP_2" in dataset_version:
+        outputs, evaluation_state = model_api_lamp2.run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state, retry_formatting=False)
+
+    elif "LaMP_3" in dataset_version:
+        outputs, evaluation_state = model_api_lamp3.run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state, retry_formatting=False)
 
     return outputs, evaluation_state
 
-def save_results_to_file(gt_targets, predictions, evaluation_state):
+def save_results_to_file(gt_targets, predictions, evaluation_state, dataset_version):
 
-    # convert the lists of integers to lists of strings
-    gt_targets = list(map(lambda integer_value: str(integer_value), gt_targets))
-    predictions = list(map(lambda integer_value: str(integer_value), predictions))
+    if "LaMP_1" in dataset_version:
+        # already list of string values (single integer for the class)
+        pass
+    
+    elif "LaMP_2" in dataset_version:
+        raise NotImplementedError
+
+    elif "LaMP_3" in dataset_version:
+        # convert the lists of integers to lists of strings
+        gt_targets = list(map(lambda integer_value: str(integer_value), gt_targets))
+        predictions = list(map(lambda integer_value: str(integer_value), predictions))
+    
+
     predicted_uids = list(map(str, evaluation_state['predicted_uids']))
     
     # save the ground truth targets and the predictions in files
@@ -99,7 +120,7 @@ def save_results_to_file(gt_targets, predictions, evaluation_state):
         f.write('\n'.join(predicted_uids) + "\n")
     
 
-def evaluate(data_folder_path, dataset_df, dataset_name, test_mode=False):
+def evaluate(data_folder_path, dataset_df, dataset_name, dataset_version, test_mode=False):
 
     evaluation_state = {'nb_samples_processed': 0, 'uid_index': 0, 'predicted_uids': []}
 
@@ -110,7 +131,7 @@ def evaluate(data_folder_path, dataset_df, dataset_name, test_mode=False):
             dataset_df = llama_index_input_prompts(data_folder_path, dataset_df, dataset_name)
     
     try:
-        predictions, evaluation_state = predict(dataset_df, evaluation_state)
+        predictions, evaluation_state = predict(dataset_df, dataset_version, evaluation_state)
 
     except (openai.error.RateLimitError, revChatGPT.typings.APIConnectionError) as e:    # OAI API rate limit is reached
         logger.warning(f"Exception: {e} \n")
@@ -119,13 +140,24 @@ def evaluate(data_folder_path, dataset_df, dataset_name, test_mode=False):
     logger.info(f"Predictions made: {predictions} \n")
     
     if not test_mode:
-        gt_targets = dataset_df['completion'].tolist()
+        gt_targets = dataset_df['output'].tolist()
         logger.info(f"GT targets: {gt_targets} \n")
 
         # assert len(gt_targets) == len(predictions), f"The number of ground truth targets ({len(gt_targets)}) and predictions ({len(predictions)}) should be the same."
 
+        if "LaMP_1" in dataset_version:
+            # remove the square brackets around the integer predicted
+            predictions = [prediction[1:-1] for prediction in predictions]
+            gt_targets = [gt_target[1:-1] for gt_target in gt_targets]
+
+        elif "LaMP_2" in dataset_version:
+            pass
+
+        elif "LaMP_3" in dataset_version:
+            pass
+
         # save the ground truth targets and the predictions in a file
-        save_results_to_file(gt_targets, predictions, evaluation_state)
+        save_results_to_file(gt_targets, predictions, evaluation_state, dataset_version)
 
         # read the values in the files
         with open(f'./Experiment/Data/lamp_reformatted/{dataset_version}/results/gt_targets.txt','r') as f:
@@ -137,10 +169,21 @@ def evaluate(data_folder_path, dataset_df, dataset_name, test_mode=False):
         logger.info(f"Predictions until now: {predictions}")
         logger.info(f"Ground truth targets until now: {gt_targets}")
 
-        predictions = [int(prediction) for prediction in predictions if prediction != '']
-        gt_targets = [int(gt_target) for gt_target in gt_targets]
+        if "LaMP_1" in dataset_version:
+            predictions = [int(prediction) for prediction in predictions]
+            gt_targets = [int(gt_target) for gt_target in gt_targets]
+        
+        elif "LaMP_2" in dataset_version:
+            # processing needed before computing the metrics?
+            pass
+
+        elif "LaMP_3" in dataset_version:
+            predictions = [int(prediction) for prediction in predictions if prediction != '']
+            gt_targets = [int(gt_target) for gt_target in gt_targets]
+        
+        
         logger.info(f"All predictions: {predictions}")
-        logger.info(f"All ground truth targets: {gt_targets}")
+        logger.info(f"All ground-truth targets: {gt_targets}")
 
         logger.info(f"Computing metrics for a total of {len(gt_targets)} samples...")
         compute_metrics(gt_targets, predictions)
@@ -209,7 +252,7 @@ if __name__ == '__main__':
     # trained_model = train(train_df)
 
     # evaluate the predictive model on the validation set
-    gt_targets, outputs, evaluation_state = evaluate(data_folder_path, val_df, "val", test_mode=False)
+    gt_targets, outputs, evaluation_state = evaluate(data_folder_path, val_df, "val", dataset_version, test_mode=False)
 
     # get predictions of the predictive model on the test set
     # outputs, evaluation_state = predict(test_df, "test", evaluation_state)

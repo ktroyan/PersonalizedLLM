@@ -124,11 +124,10 @@ def index_documents(dataset_name, service_context=None):
     # Under the hood, LlamaIndex parses the raw documents into intermediate representations, calculates vector embeddings, and infers metadata. The most commonly used index is the VectorStoreIndex
     if config.API_CHOICE == "oai":
         documents_indexed = GPTVectorStoreIndex.from_documents(documents, openai_api_key=os.environ['OPENAI_API_KEY'])
-    else:
         # documents_indexed = GPTListIndex.from_documents(documents, service_context=service_context)
-        # documents_indexed = ListIndex.from_documents(documents, service_context=service_context)
-        # documents_indexed = GPTVectorStoreIndex.from_documents(documents, service_context=service_context)
+    else:
         documents_indexed = VectorStoreIndex.from_documents(documents, service_context=service_context)
+        # documents_indexed = ListIndex.from_documents(documents, service_context=service_context)
 
     return documents_indexed
 
@@ -172,81 +171,89 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
 
     query_engine = get_query_engine(documents_indexed)
 
-    for i, sample_prompt in enumerate(dataset_df['prompt']):    # iterate over the samples of the dataset
+    for i, sample_prompt in enumerate(dataset_df['input']):    # iterate over the samples of the dataset
 
-        logger.debug(f"Llama-index iteration over the sample: {i+1}/{len(dataset_df['prompt'])}")
+        logger.debug(f"Llama-index iteration over the sample: {i+1}/{len(dataset_df['input'])}")
 
         user_id = dataset_df['uid'][i]
         
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Find and output another useful review from the user profile field of the same user to predict the score of the following review: {sample_prompt}
-        # """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, find and output a different review in the profile field of the same user.
-        # The review you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
-        # The review you output should be the review text and its associated score.
-        # ```{sample_prompt}```
-        # """
+        if "LaMP_1" in data_folder_path:
+            raise NotImplementedError
+        
+        elif "LaMP_2" in data_folder_path:
+            raise NotImplementedError
+    
+        elif "LaMP_3" in data_folder_path:
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Find and output another useful review from the user profile field of the same user to predict the score of the following review: {sample_prompt}
+            # """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, retrieve a different but similar review in the profile field of the same user.
-        # The review you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
-        # The review you output should be the review text and its associated score.
-        # ```{sample_prompt}```
-        # """
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, find and output a different review in the profile field of the same user.
+            # The review you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
+            # The review you output should be the review text and its associated score.
+            # ```{sample_prompt}```
+            # """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, retrieve a different but similar review in the profile field of the same user.
-        # The review you output should be the selected review text and its associated score.
-        # ```{sample_prompt}```
-        # """
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, retrieve a different but similar review in the profile field of the same user.
+            # The review you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
+            # The review you output should be the review text and its associated score.
+            # ```{sample_prompt}```
+            # """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, retrieve a similar review in the profile field of the same user.
-        # If and only if a useful review was found, your output should be the selected review text and its associated score.
-        # If no useful review was found, output an empty string and nothing else.
-        # ```{sample_prompt}```
-        # """
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, retrieve a different but similar review in the profile field of the same user.
+            # The review you output should be the selected review text and its associated score.
+            # ```{sample_prompt}```
+            # """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, retrieve a similar review in the profile field of the same user.
-        # If a useful review was found, your output should be the selected review text and its associated score.
-        # If no useful review was found, output "***" and nothing else.
-        # ```{sample_prompt}```
-        # """
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, retrieve a similar review in the profile field of the same user.
+            # If and only if a useful review was found, your output should be the selected review text and its associated score.
+            # If no useful review was found, output an empty string and nothing else.
+            # ```{sample_prompt}```
+            # """
 
-        llama_prompt = f"""
-        The current user has the id {user_id}. 
-        Given the review delimited by triple backticks, retrieve a similar but different review in the profile field of the same user.
-        If a useful review was found, your output should be the selected review text and its associated score.
-        If no useful review was found, output "***" and nothing else.
-        ```{sample_prompt}```
-        """
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, retrieve a similar review in the profile field of the same user.
+            # If a useful review was found, your output should be the selected review text and its associated score.
+            # If no useful review was found, output "***" and nothing else.
+            # ```{sample_prompt}```
+            # """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, retrieve different but similar reviews in the profile field of the same user.
-        # The reviews you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
-        # The reviews you output should be the reviews text and each of their associated score.
-        # ```{sample_prompt}```
-        # """
+            llama_prompt = f"""
+            The current user has the id {user_id}. 
+            Given the review delimited by triple backticks, retrieve a similar but different review in the profile field of the same user.
+            If a useful review was found, your output should be the selected review text and its associated score.
+            If no useful review was found, output "***" and nothing else.
+            ```{sample_prompt}```
+            """
 
-        # llama_prompt = f"""
-        # The current user has the id {user_id}. 
-        # Given the review delimited by triple backticks, retrieve a different but similar review in the profile field of the same user.
-        # The review you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
-        # The review you output should be in the format:
-        # 'review_text': <review_text> \n
-        # 'score': <score>.
-        # ```{sample_prompt}```
-        # """
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, retrieve different but similar reviews in the profile field of the same user.
+            # The reviews you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
+            # The reviews you output should be the reviews text and each of their associated score.
+            # ```{sample_prompt}```
+            # """
+
+            # llama_prompt = f"""
+            # The current user has the id {user_id}. 
+            # Given the review delimited by triple backticks, retrieve a different but similar review in the profile field of the same user.
+            # The review you output should be similar to the review delimited by triple backticks as it should help in making a score prediction for it.
+            # The review you output should be in the format:
+            # 'review_text': <review_text> \n
+            # 'score': <score>.
+            # ```{sample_prompt}```
+            # """
 
 
         logger.debug(f"Llama-index prompt: {llama_prompt}")
@@ -257,8 +264,8 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
 
         nb_tokens_in_llama_prompt = utils.nb_tokens_in_string(llama_prompt, encoding_name="gpt-3.5-turbo")
         nb_tokens_in_llama_response = utils.nb_tokens_in_string(response, encoding_name="gpt-3.5-turbo")
-        logger.info("Number of tokens in llama-index prompt: ", nb_tokens_in_llama_prompt)
-        logger.info("Number of tokens in llama-index response: ", nb_tokens_in_llama_response)
+        logger.info(f"Number of tokens in llama-index prompt: {nb_tokens_in_llama_prompt}")
+        logger.info(f"Number of tokens in llama-index response: {nb_tokens_in_llama_response}")
 
         llama_index_span = trace_tree.Span(name="llama-index", span_kind = trace_tree.SpanKind.TOOL)
         wb_setup.root_span.add_child_span(llama_index_span)
@@ -269,12 +276,20 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
         # tokens_used = nb_tokens_in_llama_response
         llama_index_span.attributes = {"token_usage_one_llama_exchange": tokens_used}
 
-        if "***" in response:
-            logger.debug("Llama-index response was not useful for this sample. The prompt will be the same as the sample prompt.")
-        else: 
-            dataset_df['prompt'][i] = sample_prompt + "\nTo help with the prediction, an example of correct prediction for an other sample of this user is the following. " + response
+        if "LaMP_2" in data_folder_path:
+            raise NotImplementedError
         
-        new_input_prompt = dataset_df['prompt'][i]
+        elif "LaMP_3" in data_folder_path:
+            raise NotImplementedError
+    
+        elif "LaMP_3" in data_folder_path:
+            if "***" in response:
+                logger.debug("Llama-index response was not useful for this sample. The prompt will be the same as the sample prompt.")
+            else: 
+                dataset_df['input'][i] = sample_prompt + "\nTo help with the prediction, an example of correct prediction for an other sample of this user is the following. " + response
+            
+
+        new_input_prompt = dataset_df['input'][i]
 
         logger.debug(f"New input prompt: {new_input_prompt}")
 
@@ -287,7 +302,7 @@ def llama_index_input_prompts(data_folder_path, dataset_df, dataset_name):
             f.write('New input prompt:\n ' + new_input_prompt + '\n\n\n')
 
         # NOTE: Wait to avoid being rate limited by the API
-        time.sleep((0.1*i) % 30)
+        time.sleep((0.1*i) % 20)
 
     return dataset_df
 
