@@ -1,5 +1,4 @@
 import TA_utility
-
 import pandas as pd
 import argparse
 

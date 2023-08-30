@@ -1,12 +1,12 @@
-import os 
-import pandas as pd
-import argparse
-
 """
 This script merges two TripAdvisor datasets in one dataset. 
 The two datasets are the result of two different scraping runs performed using different data (e.g., the cities to scrape).
 It also merges the associates restaurants_urls files.
 """
+
+import os 
+import pandas as pd
+import argparse
 
 def merge_datasets():
     data_file_name = f"TA_data_{language}.csv"

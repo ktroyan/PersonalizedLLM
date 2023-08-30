@@ -54,25 +54,26 @@ def create_correct_id(prefix, input_dataset, output_dataset):
 if __name__ == '__main__':
 
     # Following essentially the LaMP paper, we create a dataset with the following format:
-    # Input/X: everything about the review (TODO: Do we also make use of UP data from the field ['profile']['user_data'] turned into a template prompt?
+    # Input/X: everything about the review. 
+    # NOTE: the field ['profile']['user_data'] can be used to augment the dataset. 
+    # NOTE: Retrieval method such as LLM prompting after llama-index can be used to augment the dataset with other (review, target) pairs from other users that are similar in their user profile
     # Output/Y: review rating (or some other feature, in that case removed from the input or UP data)
     # Profile: dictionary of two fields: user_data and history. History is a list of all the other (input, output) pairs of the same user (empty list if no other pairs). Note that the UP info in the input field are raw (i.e., not turned into a prompt). 
 
     command_line_parser = argparse.ArgumentParser()
     command_line_parser.add_argument("--output_column", type=str, default="review_rating", help="the output/target feature/variable/column")
-    command_line_parser.add_argument("--language", type=str, default="en", help="language of the samples (e.g., en, fr, pt, es, it, de, zhCN, etc.)")
-    command_line_parser.add_argument("--nb_k_samples", type=int, default=3, help="number of samples in thousands (e.g., 3 for 3K samples, 10 for 10K samples, etc.) being the number of samples in the (existing) final dataset")
+    command_line_parser.add_argument("--language", type=str, default="en", help="language of the samples (e.g., en, fr, pt, es, mix)")
     command_line_parser.add_argument("--lamp_benchmark_index", type=int, default=8, help="the index of the LaMP benchmark dataset being created/formatted (e.g., 8 for LaMP-8, 9 for LaMP-9, etc.)")
 
     args = command_line_parser.parse_args()
 
     output_column = args.output_column
     language_to_scrape = args.language
-    nb_k_samples = args.nb_k_samples
     lamp_benchmark_index = args.lamp_benchmark_index
 
-    # open csv file
-    path_data = f'./TripAdvisor/Data/TA_final_dataset_{language_to_scrape.upper()}_{nb_k_samples}K.csv'
+    # Specify the path of the dataset file to open
+    path_data = f'./DataScraping/TripAdvisor/Data/TA_data_{language_to_scrape}_final.csv'
+
     dataset_df = pd.read_csv(path_data, delimiter="\t", encoding="utf-8", )
 
     # we can have an other output/target than review_rating, e.g.: review_city, or user_age_range, or user_sex, user_location, or user_nb_cities_visited, or user_tags. Of course, we would remove it from the input or UP.
@@ -94,10 +95,9 @@ if __name__ == '__main__':
         review_data = {key: review[key] for key in input_header}
         output = {output_header: review[output_header]}
 
-        # TODO: Replace the value in the input field by the template prompt plus the review data (and user data?). --> refer to the LaMP paper to see the prompts/examples
-        # TODO: Experiment with models on the dataset to see what template prompts would work well.
-        
-        input_item = {'canonical_id': index, 'input': "HERE PUT PROMPT", 'review_data': review_data}
+        # TODO: Replace the value in the input field by a template prompt plus the review data (and user data?). --> refer to the LaMP paper to see the prompts/examples
+        #         
+        input_item = {'canonical_id': index, 'input': f'What is the rating of the restaurant review given between triple ticks? The review was given the {review["review_date"]} in {review["review_city"]}. """ {review["review_title"]}\n{review["review"]}"""', 'review_data': review_data}
         
         input_dataset.append(input_item)
         output_dataset.append(output)
@@ -150,11 +150,11 @@ if __name__ == '__main__':
     create_correct_id(str(lamp_benchmark_index - 1) + "2", test_input_dataset, test_output_dataset)
     
     # save the 6 datasets in 6 files; only the first 5 should be made public
-    lamp_folder = f'./TripAdvisor/Data/LaMP/'
+    lamp_folder = f'./DataScraping/TripAdvisor/Data/LaMP/'
     if not os.path.exists(lamp_folder):
         os.makedirs(lamp_folder)
 
-    lamp_version = "LaMP_" + str(lamp_benchmark_index) + f"_{nb_k_samples}K_"
+    lamp_version = "LaMP_" + str(lamp_benchmark_index) + f"_{language_to_scrape}_"
 
     # we index it as 70 (7 for the index of the LaMP dataset in the benchmark and 0 because it is train)
     path_lamp_train_input = f'{lamp_folder}{lamp_version}train_input.json'
