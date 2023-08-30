@@ -53,12 +53,17 @@ def train(dataset_df):
 def compute_metrics(gt_targets, predictions):
     
     # metrics reported for the official LaMP benchmark
-    logger.info(f"Accuracy score: {accuracy_score(gt_targets, predictions)}")
-    logger.info(f"Mean Absolute Error (MAE): {mean_absolute_error(gt_targets, predictions)}")
-    logger.info(f"Root Mean Squared Error (RMSE):  {mean_squared_error(gt_targets, predictions, squared=False)}")
-    # logger.info(f"F1 score: {f1_score(gt_targets, predictions, average='macro')})
-    # logger.info(f"Precision score: {precision_score(gt_targets, predictions, average='macro')})
-    # logger.info(f"Recall score: {recall_score(gt_targets, predictions, average='macro')})
+
+    if config.lamp_dataset_index in ["1", "2"]:
+        logger.info(f"Accuracy score: {accuracy_score(gt_targets, predictions)}")
+
+    elif config.lamp_dataset_index == "3":
+        logger.info(f"Accuracy score: {accuracy_score(gt_targets, predictions)}")
+        logger.info(f"Mean Absolute Error (MAE): {mean_absolute_error(gt_targets, predictions)}")
+        logger.info(f"Root Mean Squared Error (RMSE):  {mean_squared_error(gt_targets, predictions, squared=False)}")
+        # logger.info(f"F1 score: {f1_score(gt_targets, predictions, average='macro')})
+        # logger.info(f"Precision score: {precision_score(gt_targets, predictions, average='macro')})
+        # logger.info(f"Recall score: {recall_score(gt_targets, predictions, average='macro')})
 
 def batch_samples(dataset_df):
     logger.info(f"Using batches of size {config.request_batch_size} for the API requests.")
@@ -99,7 +104,7 @@ def save_results_to_file(gt_targets, predictions, evaluation_state, dataset_vers
         pass
     
     elif "LaMP_2" in dataset_version:
-        raise NotImplementedError
+        pass
 
     elif "LaMP_3" in dataset_version:
         # convert the lists of integers to lists of strings

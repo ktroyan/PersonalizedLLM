@@ -105,7 +105,9 @@ def drop_unrequired_columns(dataset, columns_to_drop):
     print("Shape of uncleaned dataset: ", dataset.shape)
     print("Columns of uncleaned dataset: ", dataset.columns)
     for column in columns_to_drop:
-        dataset.drop(columns=column, inplace=True)
+        # check if the column is present in the dataframe
+        if column in dataset.columns:
+            dataset.drop(columns=column, inplace=True)
     print("Shape of cleaned dataset: ", dataset.shape)
     return dataset
 

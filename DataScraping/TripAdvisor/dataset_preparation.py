@@ -41,9 +41,9 @@ if __name__ == '__main__':
 
     language_to_scrape = args.language
 
-    path_data = f'./DataScraping/TripAdvisor/Data/TA_data_{language_to_scrape}_merged.csv'
-    path_data_cleaned = f'./DataScraping/TripAdvisor/Data/TA_cleaned_data_{language_to_scrape}_merged.csv'
-    partial_path_final_dataset = f'./DataScraping/TripAdvisor/Data/TA_final_dataset_merged_{language_to_scrape.upper()}'
+    path_data = f'./DataScraping/TripAdvisor/Data/TA_data_{language_to_scrape}.csv'
+    path_data_cleaned = f'./DataScraping/TripAdvisor/Data/TA_cleaned_data_{language_to_scrape}.csv'
+    partial_path_final_dataset = f'./DataScraping/TripAdvisor/Data/TA_final_dataset_{language_to_scrape.upper()}'
     
     dataset_df = pd.read_csv(path_data, delimiter="\t", encoding="utf-8", )
 

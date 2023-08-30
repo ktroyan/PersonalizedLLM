@@ -40,6 +40,15 @@ def get_response_from_churchless(prompt):
             retries += 1
             time.sleep(0.5)
     
-    output = response['choices'][0]['message']['content']
-    
+    try:
+        output = response['choices'][0]['message']['content']
+    except KeyError:
+        logger.debug("""Response does not contain a 'choices' attribute. 
+                     An error occurred. 
+                     Not able to get the output text. 
+                     You should wait until the API is available again.
+                     Exiting now...
+                     """)
+        quit()
+        
     return output
