@@ -57,7 +57,7 @@ def compute_metrics(gt_targets, predictions):
     if config.lamp_dataset_index in ["1", "2"]:
         logger.info(f"Accuracy score: {accuracy_score(gt_targets, predictions)}")
 
-    elif config.lamp_dataset_index == "3":
+    elif config.lamp_dataset_index in ["3", "8"]:
         logger.info(f"Accuracy score: {accuracy_score(gt_targets, predictions)}")
         logger.info(f"Mean Absolute Error (MAE): {mean_absolute_error(gt_targets, predictions)}")
         logger.info(f"Root Mean Squared Error (RMSE):  {mean_squared_error(gt_targets, predictions, squared=False)}")
@@ -95,6 +95,9 @@ def predict(dataset_df, dataset_version, evaluation_state):
     elif "LaMP_3" in dataset_version:
         outputs, evaluation_state = model_api_lamp3.run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state, retry_formatting=False)
 
+    elif "LaMP_8" in dataset_version:
+        outputs, evaluation_state = model_api_lamp3.run_api(total_nb_samples, uids, input_data_batched, outputs, evaluation_state, retry_formatting=False)
+    
     return outputs, evaluation_state
 
 def save_results_to_file(gt_targets, predictions, evaluation_state, dataset_version):
@@ -111,6 +114,8 @@ def save_results_to_file(gt_targets, predictions, evaluation_state, dataset_vers
         gt_targets = list(map(lambda integer_value: str(integer_value), gt_targets))
         predictions = list(map(lambda integer_value: str(integer_value), predictions))
     
+    elif "LaMP_8" in dataset_version:
+        pass
 
     predicted_uids = list(map(str, evaluation_state['predicted_uids']))
     
@@ -161,6 +166,9 @@ def evaluate(data_folder_path, dataset_df, dataset_name, dataset_version, test_m
         elif "LaMP_3" in dataset_version:
             pass
 
+        elif "LaMP_8" in dataset_version:
+            pass
+
         # save the ground truth targets and the predictions in a file
         save_results_to_file(gt_targets, predictions, evaluation_state, dataset_version)
 
@@ -186,6 +194,8 @@ def evaluate(data_folder_path, dataset_df, dataset_name, dataset_version, test_m
             predictions = [int(prediction) for prediction in predictions if prediction != '']
             gt_targets = [int(gt_target) for gt_target in gt_targets]
         
+        elif "LaMP_8" in dataset_version:
+            pass
         
         logger.info(f"All predictions: {predictions}")
         logger.info(f"All ground-truth targets: {gt_targets}")
