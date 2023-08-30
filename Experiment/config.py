@@ -6,6 +6,7 @@ import argparse
 import json
 import pprint
 
+
 class Constants(object):
     """
     This is a singleton (only a single instance of the class should exist in the program).
@@ -41,33 +42,46 @@ class Configuration(object):
         args_parser = argparse.ArgumentParser()
 
         # General
-        args_parser.add_argument("--USE_OAI_ACCESS_TOKEN", action="store_true", default=False, help="If there is a valid access token to OpenAI API in a local .txt file. Works for V1")
-        args_parser.add_argument("--USE_OAI_API_KEY", action="store_true", default=False, help="If there is a valid OpenAI API key in a local .txt file.")
-        args_parser.add_argument("--API_CHOICE", type=str, default="V1", help="The API to use. I.e.: oai (official), V1 (free), V2 (free), churchless (free).")
-        args_parser.add_argument("--OAI_ACCESS_TOKEN", type=str, default=None, help="A valid access token to OpenAI API. Works for OAI API, V1, V3.")
-        args_parser.add_argument("--OAI_API_KEY", type=str, default=None, help="A valid OpenAI API key. Works for OAI API, V1, V3.")
+        args_parser.add_argument("--USE_OAI_ACCESS_TOKEN", action="store_true", default=False,
+                                 help="If there is a valid access token to OpenAI API in a local .txt file. Works for V1")
+        args_parser.add_argument("--USE_OAI_API_KEY", action="store_true", default=False,
+                                 help="If there is a valid OpenAI API key in a local .txt file.")
+        args_parser.add_argument("--API_CHOICE", type=str, default="V1",
+                                 help="The API to use. I.e.: oai (official), V1 (free), V2 (free), churchless (free).")
+        args_parser.add_argument("--OAI_ACCESS_TOKEN", type=str, default=None,
+                                 help="A valid access token to OpenAI API. Works for OAI API, V1, V3.")
+        args_parser.add_argument("--OAI_API_KEY", type=str, default=None,
+                                 help="A valid OpenAI API key. Works for OAI API, V1, V3.")
 
         # Setup
-        args_parser.add_argument("--tag", default="", help="A custom tag for this experiment.")
-        args_parser.add_argument("--seed", type=int, default=121997, help="Seed for reproducibility; set randomness.")
-        args_parser.add_argument("--use_wandb", action="store_true", default=False, help="Whether or not to use WandB during the experiment run.")
+        args_parser.add_argument(
+            "--tag", default="", help="A custom tag for this experiment.")
+        args_parser.add_argument(
+            "--seed", type=int, default=121997, help="Seed for reproducibility; set randomness.")
+        args_parser.add_argument("--use_wandb", action="store_true", default=False,
+                                 help="Whether or not to use WandB during the experiment run.")
 
         # Experiment run
-        args_parser.add_argument("--use_llama_index", action="store_true", default=False, help="Whether or not to use llama-index to augment the dataset given to the predictive model.")
-        args_parser.add_argument("--use_already_indexed_dataset", action="store_true", default=False, help="Whether or not to use the dataset already llama-indexed if it exists.")
+        args_parser.add_argument("--use_llama_index", action="store_true", default=False,
+                                 help="Whether or not to use llama-index to augment the dataset given to the predictive model.")
+        args_parser.add_argument("--use_already_indexed_dataset", action="store_true", default=False,
+                                 help="Whether or not to use the dataset already llama-indexed if it exists.")
 
         # Data
-        args_parser.add_argument("--lamp_dataset_index", type=str, required=True, help="LaMP dataset index. E.g., 1, 2, 3, etc.")
-        args_parser.add_argument("--lamp_8_samples_version", type=str, default=None, help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
+        args_parser.add_argument("--lamp_dataset_index", type=str,
+                                 required=True, help="LaMP dataset index. E.g., 1, 2, 3, etc.")
+        args_parser.add_argument("--lamp_8_samples_version", type=str, default=None,
+                                 help="Rounded down in thousands number of samples for LaMP_8 dataset. E.g., 3K, 10K, etc.")
 
         # Model
         # args_parser.add_argument("--model_name", type=str, default="gpt-3.5-turbo", help="Name of the predictive model: gpt-3.5-turbo")
-        args_parser.add_argument("--request_batch_size", type=int, default=1, help="Size of the batch of samples to send to the API for prediction.")
-
+        args_parser.add_argument("--request_batch_size", type=int, default=1,
+                                 help="Size of the batch of samples to send to the API for prediction.")
+        args_parser.add_argument("--n_samples", type=int, default=0,
+                                 help="Size of the batch of samples to send to the API for prediction.")
 
         config = args_parser.parse_args()
         self.__dict__.update(vars(config))
-
 
     @staticmethod
     def from_json(json_path):
